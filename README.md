@@ -1,16 +1,44 @@
-# React + Vite
+# Innera
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![Logo de Innera](https://i.imgur.com/91yCzZ3.png)
 
-Currently, two official plugins are available:
+Proyecto web de Innera.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Este proyecto forma parte de **theinnercode.net** y se publica en el subdominio:
+`https://innera.theinnercode.net`
 
-## React Compiler
+## Desarrollo local
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+## Scripts disponibles
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run dev
+npm run build
+npm run preview
+npm run lint
+```
+
+## Flujo de ramas
+
+Todos los cambios se deben aplicar primero en la rama `dev` y, una vez validados, hacer merge a `main`.
+
+```bash
+git checkout dev
+git pull origin dev
+
+# realizar cambios
+git add .
+git commit -m "mensaje"
+git push origin dev
+
+# luego integrar en main
+git checkout main
+git pull origin main
+git merge dev
+git push origin main
+```
