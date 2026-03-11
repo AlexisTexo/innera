@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import useLanguage from "./components/useLanguage";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const FALLBACK_SITE_URL = "https://innera.theinnercode.net";
 const SITE_URL = (() => {
@@ -18,6 +19,19 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const copy = {
   es: {
     nav: "Aplicar",
+    modal: {
+      alreadyTitle: "Ya estás registrado",
+      alreadyBody:
+        "Este correo ya había sido registrado. Si no recibiste el email, revisa Spam/Promociones. Tu registro está confirmado.",
+      successTitle: "Registro confirmado",
+      successBody:
+        "Tu solicitud fue recibida. Si el correo no llega en unos minutos, revisa Spam/Promociones.",
+      closedTitle: "Registro cerrado",
+      closedBody: "Se alcanzó el límite de usuarios. Gracias por tu interés.",
+      errorTitle: "No se pudo enviar",
+      errorBody: "No pudimos guardar tu solicitud. Intenta de nuevo.",
+      cta: "Entendido",
+    },
     hero: {
       titleA: "Tu consciencia tiene",
       titleB: "una estructura.",
@@ -148,6 +162,19 @@ const copy = {
   },
   en: {
     nav: "Apply",
+    modal: {
+      alreadyTitle: "You're already registered",
+      alreadyBody:
+        "This email was already registered. If you didn't receive the email, please check Spam/Promotions. Your registration is confirmed.",
+      successTitle: "Registration confirmed",
+      successBody:
+        "We received your application. If the email doesn't arrive in a few minutes, check Spam/Promotions.",
+      closedTitle: "Registration closed",
+      closedBody: "We've reached the user limit. Thanks for your interest.",
+      errorTitle: "Something went wrong",
+      errorBody: "We couldn't save your application. Please try again.",
+      cta: "Got it",
+    },
     hero: {
       titleA: "Your consciousness has",
       titleB: "a structure.",
@@ -433,11 +460,38 @@ function Divider() {
   );
 }
 
+function Modal({ title, body, cta, onClose }) {
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className="modal-backdrop" role="dialog" aria-modal="true" onMouseDown={onClose}>
+      <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
+        <h3 className="modal-title">{title}</h3>
+        <p className="modal-body">{body}</p>
+        <div className="modal-actions">
+          <button type="button" className="modal-btn" onClick={onClose}>
+            {cta}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   useInneraSeo(SITE_URL);
 
   const { locale } = useLanguage();
   const t = copy[locale] ?? copy.en;
+
+  const [modal, setModal] = useState(null);
+  const closeModal = () => setModal(null);
 
   const [status, setStatus] = useState("idle");
   const [form, setForm] = useState({
@@ -448,9 +502,42 @@ export default function App() {
   });
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // ✅ reCAPTCHA
+  const recaptchaRef = useRef(null);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
   const emailInvalid = form.email.trim().length > 0 && !EMAIL_REGEX.test(form.email.trim());
+
   const canSubmit =
-    form.email.trim().length > 0 && EMAIL_REGEX.test(form.email.trim()) && form.depth.length > 0;
+    form.email.trim().length > 0 &&
+    EMAIL_REGEX.test(form.email.trim()) &&
+    form.depth.length > 0 &&
+    !!captchaToken;
+
+  const API_URL = import.meta.env.VITE_API_URL;
+
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("confirmed") === "1") {
+    setModal({
+      title: t.modal.successTitle,
+      body: "Tu correo fue confirmado correctamente. ¡Gracias!",
+      cta: t.modal.cta,
+    });
+    return;
+  }
+
+  if (params.get("closed") === "1") {
+    setModal({
+      title: t.modal.closedTitle,
+      body: t.modal.closedBody,
+      cta: t.modal.cta,
+    });
+    return;
+  }
+}, [t]);
 
   useEffect(() => {
     let frameId = 0;
@@ -473,6 +560,18 @@ export default function App() {
       if (frameId) window.cancelAnimationFrame(frameId);
     };
   }, []);
+
+
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("confirmed") === "1") {
+    setModal({
+      title: t.modal.successTitle,
+      body: "Tu correo fue confirmado. ¡Gracias!",
+      cta: t.modal.cta,
+    });
+  }
+}, [t.modal.cta, t.modal.successTitle]);
 
   useEffect(() => {
     const sections = Array.from(document.querySelectorAll(".section-reveal"));
@@ -516,7 +615,7 @@ export default function App() {
     setStatus("submitting");
 
     try {
-      const response = await fetch(WAITLIST_ENDPOINT, {
+      const response = await fetch(`${API_URL}/testusers/test-users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -525,15 +624,49 @@ export default function App() {
           unclear: form.unclear.trim(),
           depth: form.depth,
           locale,
+          captchaToken, // ✅ manda token al backend
         }),
       });
 
+      const data = await response.json().catch(() => ({}));
+
+      if (response.status === 403) {
+        setStatus("idle");
+        setModal({
+          title: t.modal.closedTitle,
+          body: t.modal.closedBody,
+          cta: t.modal.cta,
+        });
+        return;
+      }
+
       if (!response.ok) {
         setStatus("error");
+        setModal({
+          title: t.modal.errorTitle,
+          body: t.modal.errorBody,
+          cta: t.modal.cta,
+        });
+        return;
+      }
+
+      if (data?.alreadyRegistered) {
+        setStatus("idle");
+        setModal({
+          title: t.modal.alreadyTitle,
+          body: t.modal.alreadyBody,
+          cta: t.modal.cta,
+        });
         return;
       }
 
       setStatus("success");
+      setModal({
+        title: t.modal.successTitle,
+        body: t.modal.successBody,
+        cta: t.modal.cta,
+      });
+
       setForm({
         email: "",
         stop: "",
@@ -542,14 +675,32 @@ export default function App() {
       });
     } catch {
       setStatus("error");
+      setModal({
+        title: t.modal.errorTitle,
+        body: t.modal.errorBody,
+        cta: t.modal.cta,
+      });
+    } finally {
+      // ✅ reset captcha siempre
+      recaptchaRef.current?.reset?.();
+      setCaptchaToken("");
     }
   };
 
   return (
     <div className="landing">
+      {modal ? (
+        <Modal title={modal.title} body={modal.body} cta={modal.cta} onClose={closeModal} />
+      ) : null}
+
       <header className={`landing-header ${isScrolled ? "is-scrolled" : ""}`}>
         <div className="container header-inner">
-          <img src="/logo_innera_text.webp" alt="Innera" className="innera-logo" />
+        {/*  <img src="/logo_innera_text.webp" alt="Innera" className="innera-logo" /> */}
+          <img
+  src={`${import.meta.env.BASE_URL}logo_innera_text.png`}
+  alt="Innera"
+  className="innera-logo"
+/>
           <a href="#apply-form" className="hover-palette nav-apply">
             {t.nav}
           </a>
@@ -582,7 +733,10 @@ export default function App() {
           <div className="what-grid">
             {t.whatIs.rows.map((row, index) => (
               <article key={row.label} className="motion-card what-row">
-                <h3 className="what-label" style={{ color: whatIsColors[index % whatIsColors.length] }}>
+                <h3
+                  className="what-label"
+                  style={{ color: whatIsColors[index % whatIsColors.length] }}
+                >
                   {row.label}
                 </h3>
                 <p className="what-body">{row.body}</p>
@@ -726,6 +880,16 @@ export default function App() {
             {emailInvalid ? <p className="form-message error">{t.emailInvalid}</p> : null}
             {status === "success" ? <p className="form-message success">{t.form.success}</p> : null}
             {status === "error" ? <p className="form-message danger">{t.form.error}</p> : null}
+
+            {/* ✅ reCAPTCHA */}
+            <div style={{ marginTop: 14, display: "flex", justifyContent: "center" }}>
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={RECAPTCHA_SITE_KEY}
+                onChange={(token) => setCaptchaToken(token || "")}
+                onExpired={() => setCaptchaToken("")}
+              />
+            </div>
 
             <div className="form-submit-wrap">
               <button
