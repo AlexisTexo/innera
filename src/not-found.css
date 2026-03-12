@@ -1,0 +1,44 @@
+.not-found-main {
+  min-height: calc(100vh - 7rem);
+  display: flex;
+  align-items: center;
+}
+
+.not-found-hero {
+  min-height: auto;
+  width: 100%;
+  padding-bottom: 2rem;
+}
+
+.not-found-code {
+  margin: 0;
+  font-size: clamp(3.4rem, 14vw, 8.5rem);
+  line-height: 0.95;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  opacity: 0.3;
+}
+
+.not-found-subtitle {
+  max-width: 760px;
+}
+
+.not-found-actions {
+  margin-top: 2.2rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 700px) {
+  .not-found-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .not-found-actions .hero-cta {
+    width: 100%;
+    max-width: 100%;
+  }
+}

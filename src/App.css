@@ -9,6 +9,18 @@
   --blue: #2e73ff;
   --violet: #6851c5;
   --lavender: #a36bda;
+  --rainbow-gradient: linear-gradient(
+    90deg,
+    var(--sandy),
+    var(--coral),
+    var(--tomato),
+    var(--emerald),
+    var(--teal),
+    var(--blue),
+    var(--violet),
+    var(--lavender)
+  );
+  --rainbow-animation: gradientShift 9s ease-in-out infinite;
 }
 
 a {
@@ -52,6 +64,12 @@ a {
   gap: 1rem;
 }
 
+.header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .innera-logo {
   height: 44px;
   width: auto;
@@ -66,19 +84,51 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 999px;
   padding: 0.6rem 1rem;
+  color: #f8f8f8;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.35);
   font-size: 0.7rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   font-weight: 700;
-  opacity: 0.85;
-  transition: opacity 0.22s ease, transform 0.22s ease;
+  opacity: 0.95;
+  background-image: var(--rainbow-gradient);
+  background-size: 400% 400%;
+  animation: var(--rainbow-animation);
+  transition: opacity 0.22s ease, transform 0.22s ease, filter 0.22s ease;
 }
 
 .nav-apply:hover {
   opacity: 1;
   transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.locale-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  min-width: 54px;
+  padding: 0.58rem 0.75rem;
+  color: var(--ink);
+  background: transparent;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.9;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.locale-toggle:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .landing-main {
@@ -557,22 +607,12 @@ a {
 
 .animated-gradient-text {
   display: inline-block;
-  background-image: linear-gradient(
-    90deg,
-    var(--sandy),
-    var(--coral),
-    var(--tomato),
-    var(--emerald),
-    var(--teal),
-    var(--blue),
-    var(--violet),
-    var(--lavender)
-  );
+  background-image: var(--rainbow-gradient);
   background-size: 400% 400%;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  animation: gradientShift 9s ease-in-out infinite;
+  animation: var(--rainbow-animation);
 }
 
 .apply-hover-cycle {
@@ -640,6 +680,10 @@ a {
     width: min(1120px, calc(100% - 2rem));
   }
 
+  .header-actions {
+    margin-left: auto;
+  }
+
   .hero-section {
     min-height: calc(100vh - 6.5rem);
   }
@@ -679,10 +723,17 @@ a {
   .nav-apply {
     display: none;
   }
+
+  .locale-toggle {
+    min-width: 50px;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.62rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .animated-gradient-text,
+  .nav-apply,
   .apply-hover-cycle:hover,
   .section-reveal.is-visible {
     animation: none;
@@ -696,13 +747,15 @@ a {
   .motion-card,
   .apply-hover-cycle,
   .innera-logo,
-  .nav-apply {
+  .nav-apply,
+  .locale-toggle {
     transition: none;
   }
 
   .motion-card:hover,
   .apply-hover-cycle:hover,
   .nav-apply:hover,
+  .locale-toggle:hover,
   .innera-logo:hover {
     transform: none;
     box-shadow: none;
