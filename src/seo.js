@@ -4,42 +4,49 @@ export const FALLBACK_SITE_URL = "https://innera.theinnercode.net";
 
 export const PAGE_META_BY_LOCALE = {
   en: {
-    title: "INNERA — Sistema de Autoconocimiento de Precisión | Inner Blueprint Profile",
+    title: "INNERA — The First Inner-World Mapping System | The InnerCode Co.",
     description:
-      "INNERA is the first inner-world mapping system. The Inner Blueprint Profile (IBP) combines Jungian psychology, neuroscience, and AI to generate your real-time internal operating profile. iOS. For founders and executives. Open waitlist.",
+      "You're not lost. You're miscalibrated. INNERA is the first mapping system for your inner world. Grounded in Jung, Porges & Deci-Ryan. Closed beta — 300 spots available.",
     keywords: [
       "INNERA",
       "Inner Blueprint Profile",
+      "inner world mapping",
       "self-awareness system",
       "behavior patterns",
       "The Inner Code",
       "AI self-discovery",
+      "Jung",
+      "Porges",
+      "Deci-Ryan",
     ].join(", "),
-    ogTitle: "INNERA — Sistema de Autoconocimiento de Precisión | Inner Blueprint Profile",
+    ogTitle: "INNERA — You're Not Lost. You're Miscalibrated.",
     ogDescription:
-      "INNERA is the first inner-world mapping system. IBP combines Jungian psychology, neuroscience, and AI to generate your real-time internal operating profile.",
-    twitterTitle: "INNERA — Sistema de Autoconocimiento de Precisión | Inner Blueprint Profile",
+      "The first mapping system for your inner world. Grounded in Jung, Porges & Deci-Ryan. Closed beta — 300 spots available.",
+    twitterTitle: "INNERA — You're Not Lost. You're Miscalibrated.",
     twitterDescription:
-      "INNERA is the first inner-world mapping system. IBP combines Jungian psychology, neuroscience, and AI.",
+      "The first mapping system for your inner world. Grounded in Jung, Porges & Deci-Ryan. Request beta access.",
   },
   es: {
-    title: "INNERA | Sistema de Autoconocimiento de Precisión para tu Mundo Interno",
+    title: "INNERA — El Primer Sistema de Mapeo del Mundo Interior | The InnerCode Co.",
     description:
-      "INNERA es el primer sistema de mapeo del mundo interior. El Inner Blueprint Profile (IBP) integra psicología junguiana, neurociencia e IA para generar tu perfil de funcionamiento interior en tiempo real. iOS. Para fundadores y ejecutivos. Lista de espera abierta.",
+      "No estás perdido. Estás descalibrado. INNERA es el primer sistema de mapeo del mundo interior. Basado en Jung, Porges y Deci-Ryan. Beta cerrada — 300 lugares disponibles.",
     keywords: [
       "INNERA",
+      "mapeo del mundo interior",
       "autoconocimiento de precisión",
       "patrones internos",
-      "perfil interno",
       "The Inner Code",
       "conciencia aplicada",
+      "Jung",
+      "Porges",
+      "Deci-Ryan",
     ].join(", "),
-    ogTitle: "INNERA | Sistema de Autoconocimiento de Precisión",
+    ogTitle: "INNERA — No Estás Perdido. Estás Descalibrado.",
     ogDescription:
-      "INNERA es el primer sistema de mapeo del mundo interior. El IBP integra psicología junguiana, neurociencia e IA en tiempo real.",
-    twitterTitle: "INNERA | Sistema de Autoconocimiento de Precisión",
+      "El primer sistema de mapeo del mundo interior. Basado en Jung, Porges y Deci-Ryan. Beta cerrada — 300 lugares disponibles.",
+    twitterTitle: "INNERA — No Estás Perdido. Estás Descalibrado.",
     twitterDescription:
-      "INNERA integra psicología junguiana, neurociencia e IA para mapear tu funcionamiento interior.",
+      "El primer sistema de mapeo del mundo interior. Basado en Jung, Porges y Deci-Ryan. Solicita acceso beta.",
   },
 };
 

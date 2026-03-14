@@ -1,9 +1,9 @@
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import useLanguage from "./components/useLanguage";
-
-const ReCAPTCHA = lazy(() => import("react-google-recaptcha"));
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import Modal from "./components/Modal";
+import ApplyForm from "./components/ApplyForm";
+import { db, firebaseConfigError } from "./firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 
 const whatIsColors = ["var(--sandy)", "var(--coral)", "var(--teal)"];
 const earlyColors = ["var(--sandy)", "var(--coral)", "var(--emerald)", "var(--blue)"];
@@ -52,29 +52,28 @@ function Divider() {
   );
 }
 
-function Modal({ title, body, cta, onClose }) {
-  useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+function getInitialPageModal(search, t) {
+  const params = new URLSearchParams(search);
 
-  return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true" onMouseDown={onClose}>
-      <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
-        <h3 className="modal-title">{title}</h3>
-        <p className="modal-body">{body}</p>
-        <div className="modal-actions">
-          <button type="button" className="modal-btn" onClick={onClose}>
-            {cta}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  if (params.get("confirmed") === "1") {
+    return {
+      title: t.modal.successTitle,
+      body: t.modal.emailConfirmedBody,
+      cta: t.modal.cta,
+    };
+  }
+
+  if (params.get("closed") === "1") {
+    return {
+      title: t.modal.closedTitle,
+      body: t.modal.closedBody,
+      cta: t.modal.cta,
+    };
+  }
+
+  return null;
 }
+
 
 export default function App({ forcedLocale, dictionary }) {
   const { locale, toggleLocale } = useLanguage(forcedLocale);
@@ -84,90 +83,47 @@ export default function App({ forcedLocale, dictionary }) {
   const localeToggleAria =
     locale === "es" ? "Switch language to English" : "Cambiar idioma a español";
 
-  const [modal, setModal] = useState(null);
+  const [modal, setModal] = useState(() =>
+    typeof window === "undefined" ? null : getInitialPageModal(window.location.search, dictionary)
+  );
   const closeModal = () => setModal(null);
 
-  const [status, setStatus] = useState("idle");
-  const [form, setForm] = useState({
-    email: "",
-    stop: "",
-    unclear: "",
-    depth: "curiosity",
-  });
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  // ✅ reCAPTCHA
-  const recaptchaRef = useRef(null);
-  const [captchaToken, setCaptchaToken] = useState("");
-  const [isClient, setIsClient] = useState(false);
-  const [shouldLoadRecaptcha, setShouldLoadRecaptcha] = useState(false);
-  const RECAPTCHA_SITE_KEY = (import.meta.env.VITE_RECAPTCHA_SITE_KEY ?? "").trim();
-  const hasRecaptchaSiteKey = RECAPTCHA_SITE_KEY.length > 0;
-  const canRenderRecaptcha = isClient && hasRecaptchaSiteKey && shouldLoadRecaptcha;
-
-  const emailInvalid = form.email.trim().length > 0 && !EMAIL_REGEX.test(form.email.trim());
-
-  const canSubmit =
-    form.email.trim().length > 0 &&
-    EMAIL_REGEX.test(form.email.trim()) &&
-    form.depth.length > 0 &&
-    (!hasRecaptchaSiteKey || !!captchaToken);
-
-  const API_URL = import.meta.env.VITE_API_URL;
+  const [registrationsCount, setRegistrationsCount] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient || !hasRecaptchaSiteKey) return;
-
-    const target = document.getElementById("apply-form");
-    if (!target) {
-      setShouldLoadRecaptcha(true);
-      return;
+    if (firebaseConfigError || !db) {
+      console.error(firebaseConfigError ?? "Firebase client is unavailable.");
+      return undefined;
     }
 
-    if (!("IntersectionObserver" in window)) {
-      setShouldLoadRecaptcha(true);
-      return;
-    }
+    // onSnapshot reemplaza el fetch inicial + la suscripción realtime de Supabase.
+    // Se dispara inmediatamente con el valor actual y luego en cada cambio
+    // (equivalente al trigger on_application_insert que actualizaba public_stats).
+    const statsRef = doc(db, "stats", "global");
 
-    const observer = new IntersectionObserver(
-      (entries, currentObserver) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          setShouldLoadRecaptcha(true);
-          currentObserver.unobserve(entry.target);
+    const unsubscribe = onSnapshot(
+      statsRef,
+      (snapshot) => {
+        if (!snapshot.exists()) return;
+        const newCount = snapshot.data()?.applications_count ?? 0;
+        setRegistrationsCount((prev) => {
+          if (prev !== 0 && newCount !== prev) {
+            setIsAnimating(true);
+            setTimeout(() => setIsAnimating(false), 800);
+          }
+          return newCount;
         });
       },
-      { rootMargin: "240px 0px", threshold: 0.01 }
+      (error) => {
+        console.error("Failed to listen to public stats.", error);
+      }
     );
 
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [isClient, hasRecaptchaSiteKey]);
+    return () => unsubscribe();
+  }, []);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    if (params.get("confirmed") === "1") {
-      setModal({
-        title: t.modal.successTitle,
-        body: t.modal.emailConfirmedBody,
-        cta: t.modal.cta,
-      });
-      return;
-    }
-
-    if (params.get("closed") === "1") {
-      setModal({
-        title: t.modal.closedTitle,
-        body: t.modal.closedBody,
-        cta: t.modal.cta,
-      });
-    }
-  }, [t.modal.closedBody, t.modal.closedTitle, t.modal.cta, t.modal.emailConfirmedBody, t.modal.successTitle]);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     let frameId = 0;
@@ -219,90 +175,7 @@ export default function App({ forcedLocale, dictionary }) {
     return () => observer.disconnect();
   }, []);
 
-  const updateForm = (field) => (event) => {
-    const value = event.target.value;
-    setStatus("idle");
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!canSubmit || status === "submitting") return;
-
-    setStatus("submitting");
-
-    try {
-      const response = await fetch(`${API_URL}/testusers/test-users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email.trim(),
-          stopReason: form.stop.trim(),
-          unclear: form.unclear.trim(),
-          depth: form.depth,
-          locale,
-          captchaToken, // ✅ manda token al backend
-        }),
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (response.status === 403) {
-        setStatus("idle");
-        setModal({
-          title: t.modal.closedTitle,
-          body: t.modal.closedBody,
-          cta: t.modal.cta,
-        });
-        return;
-      }
-
-      if (!response.ok) {
-        setStatus("error");
-        setModal({
-          title: t.modal.errorTitle,
-          body: t.modal.errorBody,
-          cta: t.modal.cta,
-        });
-        return;
-      }
-
-      if (data?.alreadyRegistered) {
-        setStatus("idle");
-        setModal({
-          title: t.modal.alreadyTitle,
-          body: t.modal.alreadyBody,
-          cta: t.modal.cta,
-        });
-        return;
-      }
-
-      setStatus("success");
-      setModal({
-        title: t.modal.successTitle,
-        body: t.modal.successBody,
-        cta: t.modal.cta,
-      });
-
-      setForm({
-        email: "",
-        stop: "",
-        unclear: "",
-        depth: "curiosity",
-      });
-    } catch {
-      setStatus("error");
-      setModal({
-        title: t.modal.errorTitle,
-        body: t.modal.errorBody,
-        cta: t.modal.cta,
-      });
-    } finally {
-      // ✅ reset captcha siempre
-      recaptchaRef.current?.reset?.();
-      setCaptchaToken("");
-    }
-  };
 
   return (
     <div className="landing">
@@ -345,7 +218,7 @@ export default function App({ forcedLocale, dictionary }) {
 
       <main className="container landing-main">
         <section className="section-reveal-1 hero-section">
-          <span className="hero-brand">by TheInnerCode</span>
+          <span className="hero-brand">{t.trust.foundedBy}</span>
           <h1 className="hero-title">
             <span>{t.hero.titleA}</span>
             <br />
@@ -355,6 +228,10 @@ export default function App({ forcedLocale, dictionary }) {
           <a href="#apply-form" className="apply-hover-cycle hero-cta">
             {t.hero.cta}
           </a>
+          <p className="hero-social-proof">
+            {t.hero.socialProof} · <span className={`hero-spots-count ${isAnimating ? "count-pop" : ""}`}>{registrationsCount}</span>/300 {t.hero.spotsLeft}
+          </p>
+          <p className="hero-trust">{t.trust.frameworks}</p>
           <span className="hero-line" aria-hidden="true" />
         </section>
 
@@ -459,99 +336,19 @@ export default function App({ forcedLocale, dictionary }) {
           <h2 className="section-title">{t.form.title}</h2>
           <p className="form-intro">{t.form.intro}</p>
 
-          <form onSubmit={handleSubmit} className="apply-form">
-            <ol className="form-list">
-              <li className="motion-card form-item">
-                <label className="field-label">
-                  {t.form.fields.email}
-                  <input
-                    type="email"
-                    required
-                    value={form.email}
-                    onChange={updateForm("email")}
-                    className="field-input"
-                    placeholder="you@email.com"
-                  />
-                </label>
-              </li>
-
-              <li className="motion-card form-item">
-                <label className="field-label">
-                  {t.form.fields.depth}
-                  <select value={form.depth} onChange={updateForm("depth")} className="field-input">
-                    {Object.entries(t.form.fields.depthOptions).map(([value, label]) => (
-                      <option key={value} value={value} className="field-option">
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </li>
-
-              <li className="motion-card form-item">
-                <label className="field-label">
-                  {t.form.fields.stop}
-                  <textarea
-                    value={form.stop}
-                    onChange={updateForm("stop")}
-                    rows={3}
-                    className="field-textarea"
-                  />
-                </label>
-              </li>
-
-              <li className="motion-card form-item">
-                <label className="field-label">
-                  {t.form.fields.unclear}
-                  <textarea
-                    value={form.unclear}
-                    onChange={updateForm("unclear")}
-                    rows={4}
-                    className="field-textarea"
-                  />
-                </label>
-              </li>
-            </ol>
-
-            {emailInvalid ? <p className="form-message error">{t.emailInvalid}</p> : null}
-            {status === "success" ? <p className="form-message success">{t.form.success}</p> : null}
-            {status === "error" ? <p className="form-message danger">{t.form.error}</p> : null}
-
-            {canRenderRecaptcha ? (
-              <div style={{ marginTop: 14, display: "flex", justifyContent: "center" }}>
-                <Suspense fallback={<div style={{ minHeight: 78 }} />}>
-                  <ReCAPTCHA
-                    ref={recaptchaRef}
-                    sitekey={RECAPTCHA_SITE_KEY}
-                    onChange={(token) => setCaptchaToken(token || "")}
-                    onExpired={() => setCaptchaToken("")}
-                  />
-                </Suspense>
-              </div>
-            ) : hasRecaptchaSiteKey ? (
-              <div style={{ marginTop: 14, minHeight: 78 }} />
-            ) : (
-              <p className="form-message error">
-                CAPTCHA no configurado: define <code>VITE_RECAPTCHA_SITE_KEY</code> en tu .env
-              </p>
-            )}
-
-            <div className="form-submit-wrap">
-              <button
-                type="submit"
-                disabled={!canSubmit || status === "submitting"}
-                className="apply-hover-cycle submit-button"
-              >
-                {status === "submitting" ? t.form.submitting : t.form.submit}
-              </button>
-            </div>
-          </form>
+          <ApplyForm t={t} locale={locale} />
         </section>
       </main>
 
       <footer className="section-reveal section-reveal-6 landing-footer">
         <p className="footer-copy">{t.footer}</p>
       </footer>
+
+      <div className="mobile-sticky-cta" aria-hidden="true">
+        <a href="#apply-form" className="apply-hover-cycle hero-cta">
+          {t.hero.cta}
+        </a>
+      </div>
     </div>
   );
 }

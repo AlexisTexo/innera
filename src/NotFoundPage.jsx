@@ -2,19 +2,21 @@ import { getLocaleFromPath } from "./locale";
 
 const copy = {
   en: {
-    titleA: "This page",
-    titleB: "does not exist.",
+    kicker: "Oops...",
+    titleA: "We couldn't find",
+    titleB: "that page.",
     subtitle:
-      "The link may be broken or the page may have moved. Return to INNERA and continue your journey.",
+      "The link may be broken or the page may have moved. Return to INNERA and keep exploring.",
     backHome: "Back to Home",
     footer: "INNERA by TheInnerCode",
     localeAria: "Switch language to Spanish",
   },
   es: {
-    titleA: "Esta página",
-    titleB: "no existe.",
+    kicker: "Oops...",
+    titleA: "No encontramos",
+    titleB: "esa página.",
     subtitle:
-      "Puede que el enlace esté roto o que la página se haya movido. Vuelve a INNERA y continúa tu camino.",
+      "Puede que el enlace esté roto o que la página se haya movido. Vuelve a INNERA y sigue explorando.",
     backHome: "Volver al Inicio",
     footer: "INNERA por TheInnerCode",
     localeAria: "Switch language to English",
@@ -60,7 +62,7 @@ export default function NotFoundPage() {
 
       <main className="container landing-main not-found-main">
         <section className="hero-section not-found-hero">
-          <p className="not-found-code">404</p>
+          <p className="not-found-code">{t.kicker}</p>
           <h1 className="hero-title">
             <span>{t.titleA}</span>
             <br />

@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── applications ──────────────────────────────────────────────────────────
+    // Solo escritura nueva desde el cliente (insert).
+    // Lectura, update y delete: solo admin (Cloud Functions usan admin SDK).
+    // Equivalente al esquema de Supabase con RLS.
+    match /applications/{docId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // ─── stats/global ──────────────────────────────────────────────────────────
+    // Solo lectura pública del contador de registros.
+    // La escritura solo la hace la Cloud Function (admin SDK).
+    match /stats/global {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

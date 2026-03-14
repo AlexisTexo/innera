@@ -13,10 +13,16 @@ const content = {
     "cta": "Got it"
   },
   "hero": {
-    "titleA": "Your consciousness has",
-    "titleB": "a structure.",
-    "subtitle": "Innera reveals the internal architecture behind how you think, react, and choose.",
-    "cta": "Apply as an Early Adopter"
+    "titleA": "You're not lost.",
+    "titleB": "You're miscalibrated.",
+    "subtitle": "INNERA is the first mapping system for your inner world.",
+    "cta": "Request beta access",
+    "socialProof": "Closed beta",
+    "spotsLeft": "spots occupied"
+  },
+  "trust": {
+    "foundedBy": "Built by The InnerCode Co.",
+    "frameworks": "Grounded in Jung · Porges · Deci-Ryan"
   },
   "whatIs": {
     "kicker": "What Is Innera",

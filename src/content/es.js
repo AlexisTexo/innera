@@ -13,10 +13,16 @@ const content = {
     "cta": "Entendido"
   },
   "hero": {
-    "titleA": "Tu consciencia tiene",
-    "titleB": "una estructura.",
-    "subtitle": "Innera revela la arquitectura interna detras de como piensas, reaccionas y decides.",
-    "cta": "Aplicar como un Early Adopter"
+    "titleA": "No estás perdido.",
+    "titleB": "Estás descalibrado.",
+    "subtitle": "INNERA es el primer sistema de mapeo del mundo interior.",
+    "cta": "Solicitar acceso beta",
+    "socialProof": "Acceso beta cerrado",
+    "spotsLeft": "lugares ocupados"
+  },
+  "trust": {
+    "foundedBy": "Desarrollado por The InnerCode Co.",
+    "frameworks": "Basado en Jung · Porges · Deci-Ryan"
   },
   "whatIs": {
     "kicker": "Que es Innera",
