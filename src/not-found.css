@@ -1,0 +1,90 @@
+.not-found-shell {
+  position: relative;
+  overflow: hidden;
+}
+
+.not-found-main {
+  min-height: 100vh;
+}
+
+.not-found-hero {
+  position: relative;
+  z-index: 1;
+}
+
+.not-found-title {
+  max-width: 920px;
+}
+
+.not-found-subtitle {
+  max-width: 720px;
+}
+
+.not-found-palette {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.not-found-palette-bar {
+  width: clamp(42px, 8vw, 68px);
+  height: 8px;
+  border-radius: 999px;
+  animation: paletteFloat 3.2s ease-in-out infinite;
+}
+
+.not-found-palette-bar.sandy {
+  background: var(--sandy);
+  animation-delay: 0s;
+}
+
+.not-found-palette-bar.coral {
+  background: var(--coral);
+  animation-delay: 0.16s;
+}
+
+.not-found-palette-bar.tomato {
+  background: var(--tomato);
+  animation-delay: 0.32s;
+}
+
+.not-found-palette-bar.lavender {
+  background: var(--lavender);
+  animation-delay: 0.48s;
+}
+
+.not-found-palette-bar.blue {
+  background: var(--blue);
+  animation-delay: 0.64s;
+}
+
+.not-found-palette-bar.teal {
+  background: var(--teal);
+  animation-delay: 0.8s;
+}
+
+@keyframes paletteFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .not-found-palette {
+    gap: 0.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .not-found-palette-bar {
+    animation: none;
+  }
+}

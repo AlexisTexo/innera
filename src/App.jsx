@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
+import ReCAPTCHA from "./components/ReCAPTCHA";
 import useLanguage from "./components/useLanguage";
-import ReCAPTCHA from "react-google-recaptcha";
+import {
+  getAlternateLocale,
+  getHrefLangEntries,
+  getLocaleUrl,
+  OG_LOCALES,
+  SEO_META,
+  SOCIAL_IMAGE,
+} from "./site-config";
 
 const FALLBACK_SITE_URL = "https://innera.theinnercode.net";
 const SITE_URL = (() => {
@@ -18,7 +26,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const copy = {
   es: {
-    nav: "Aplicar",
+    nav: "Solicitar acceso beta",
     modal: {
       alreadyTitle: "Ya estás registrado",
       alreadyBody:
@@ -33,11 +41,15 @@ const copy = {
       cta: "Entendido",
     },
     hero: {
-      titleA: "Tu consciencia tiene",
-      titleB: "una estructura.",
-      subtitle:
-        "Innera revela la arquitectura interna detras de como piensas, reaccionas y decides.",
-      cta: "Aplicar como un Early Adopter",
+      brand: "TheInnerCode Co.",
+      titleA: "No estas perdido.",
+      titleB: "Estas descalibrado.",
+      subtitle: "INNERA es el primer sistema de mapeo del mundo interior.",
+      cta: "Solicitar acceso beta",
+      betaAccess: "Acceso beta cerrado",
+      betaSpots: "300 lugares disponibles",
+      theoryLabel: "Fundamentos teoricos",
+      theoryItems: ["Jung", "Porges", "Deci-Ryan"],
     },
     whatIs: {
       kicker: "Que es Innera",
@@ -161,7 +173,7 @@ const copy = {
     footer: "INNERA por TheInnerCode",
   },
   en: {
-    nav: "Apply",
+    nav: "Request beta access",
     modal: {
       alreadyTitle: "You're already registered",
       alreadyBody:
@@ -176,11 +188,15 @@ const copy = {
       cta: "Got it",
     },
     hero: {
-      titleA: "Your consciousness has",
-      titleB: "a structure.",
-      subtitle:
-        "Innera reveals the internal architecture behind how you think, react, and choose.",
-      cta: "Apply as an Early Adopter",
+      brand: "TheInnerCode Co.",
+      titleA: "You are not lost.",
+      titleB: "You are miscalibrated.",
+      subtitle: "INNERA is the first system for mapping the inner world.",
+      cta: "Request beta access",
+      betaAccess: "Closed beta access",
+      betaSpots: "300 spots available",
+      theoryLabel: "Theoretical foundations",
+      theoryItems: ["Jung", "Porges", "Deci-Ryan"],
     },
     whatIs: {
       kicker: "What Is Innera",
@@ -315,26 +331,6 @@ const timelineColors = [
   "var(--emerald)",
 ];
 
-const PAGE_META = {
-  title: "Innera | Perfil de Blueprint Interno",
-  description:
-    "Innera te ayuda a entender tus patrones internos con un sistema guiado, progresivo y accionable para profundizar tu autoconciencia.",
-  keywords: [
-    "Innera",
-    "The Inner Code",
-    "autoconciencia",
-    "perfil interno",
-    "blueprint interno",
-    "bienestar digital",
-  ].join(", "),
-  ogTitle: "Innera | Perfil de Blueprint Interno",
-  ogDescription:
-    "Solicita acceso a Innera y explora una experiencia de autoconocimiento guiada con tecnología y claridad práctica.",
-  twitterTitle: "Innera | Perfil de Blueprint Interno",
-  twitterDescription:
-    "Solicita acceso a Innera y explora una experiencia de autoconocimiento guiada con tecnología y claridad práctica.",
-};
-
 const upsertMeta = (attr, key, content) => {
   if (!content) return;
   const selector = `meta[${attr}="${key}"]`;
@@ -363,48 +359,80 @@ const upsertLink = (rel, href) => {
   element.setAttribute("href", href);
 };
 
-function useInneraSeo(siteUrl) {
+const upsertAlternateLink = (hreflang, href) => {
+  if (!href || !hreflang) return;
+  const selector = `link[rel="alternate"][hreflang="${hreflang}"]`;
+  let element = document.head.querySelector(selector);
+
+  if (!element) {
+    element = document.createElement("link");
+    element.setAttribute("rel", "alternate");
+    element.setAttribute("hreflang", hreflang);
+    document.head.appendChild(element);
+  }
+
+  element.setAttribute("href", href);
+};
+
+function useInneraSeo(siteUrl, locale) {
+  const activeMeta = SEO_META[locale] ?? SEO_META.en;
+  const canonicalUrl = useMemo(() => getLocaleUrl(siteUrl, locale), [locale, siteUrl]);
+  const hrefLangEntries = useMemo(() => getHrefLangEntries(siteUrl), [siteUrl]);
+  const ogLocale = OG_LOCALES[locale] ?? OG_LOCALES.en;
+  const alternateOgLocale = OG_LOCALES[getAlternateLocale(locale)] ?? OG_LOCALES.es;
   const softwareJsonLd = useMemo(
     () => ({
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      name: "Innera",
+      name: "INNERA",
       applicationCategory: "HealthApplication",
       operatingSystem: "Web",
-      inLanguage: ["es", "en"],
-      description:
-        "Innera revela patrones internos de pensamiento, energía y decisiones para desarrollar autoconciencia aplicada.",
-      url: `${siteUrl}/innera`,
+      inLanguage: locale === "es" ? ["es", "en"] : ["en", "es"],
+      description: activeMeta.description,
+      url: canonicalUrl,
       publisher: {
         "@type": "Organization",
         name: "The Inner Code",
         url: siteUrl,
       },
     }),
+    [activeMeta.description, canonicalUrl, locale, siteUrl]
+  );
+  const socialImageUrl = useMemo(
+    () => new URL(SOCIAL_IMAGE.path, siteUrl).toString(),
     [siteUrl]
   );
 
   useEffect(() => {
-    document.title = PAGE_META.title;
+    document.title = activeMeta.title;
 
-    upsertMeta("name", "description", PAGE_META.description);
-    upsertMeta("name", "keywords", PAGE_META.keywords);
+    upsertMeta("name", "description", activeMeta.description);
+    upsertMeta("name", "keywords", activeMeta.keywords);
+    upsertMeta("name", "language", locale === "es" ? "Spanish" : "English");
     upsertMeta("name", "robots", "index, follow");
 
     upsertMeta("property", "og:type", "website");
-    upsertMeta("property", "og:url", `${siteUrl}/innera`);
-    upsertMeta("property", "og:title", PAGE_META.ogTitle);
-    upsertMeta("property", "og:description", PAGE_META.ogDescription);
+    upsertMeta("property", "og:locale", ogLocale);
+    upsertMeta("property", "og:locale:alternate", alternateOgLocale);
+    upsertMeta("property", "og:url", canonicalUrl);
+    upsertMeta("property", "og:title", activeMeta.ogTitle);
+    upsertMeta("property", "og:description", activeMeta.ogDescription);
     upsertMeta("property", "og:site_name", "The Inner Code");
-    upsertMeta("property", "og:image", `${siteUrl}/logo_innera_head.webp`);
-    upsertMeta("property", "og:image:alt", "Innera by The Inner Code");
+    upsertMeta("property", "og:image", socialImageUrl);
+    upsertMeta("property", "og:image:secure_url", socialImageUrl);
+    upsertMeta("property", "og:image:alt", SOCIAL_IMAGE.alt);
+    upsertMeta("property", "og:image:type", SOCIAL_IMAGE.type);
+    upsertMeta("property", "og:image:width", SOCIAL_IMAGE.width);
+    upsertMeta("property", "og:image:height", SOCIAL_IMAGE.height);
 
     upsertMeta("name", "twitter:card", "summary_large_image");
-    upsertMeta("name", "twitter:title", PAGE_META.twitterTitle);
-    upsertMeta("name", "twitter:description", PAGE_META.twitterDescription);
-    upsertMeta("name", "twitter:image", `${siteUrl}/logo_innera_head.webp`);
+    upsertMeta("name", "twitter:title", activeMeta.twitterTitle);
+    upsertMeta("name", "twitter:description", activeMeta.twitterDescription);
+    upsertMeta("name", "twitter:image", socialImageUrl);
+    upsertMeta("name", "twitter:image:alt", SOCIAL_IMAGE.alt);
 
-    upsertLink("canonical", `${siteUrl}/innera`);
+    upsertLink("canonical", canonicalUrl);
+    hrefLangEntries.forEach((entry) => upsertAlternateLink(entry.hrefLang, entry.href));
     upsertLink("icon", "/icono2.ico?v=2");
     upsertLink("shortcut icon", "/icono2.ico?v=2");
     upsertLink("apple-touch-icon", "/icono2.png?v=2");
@@ -420,7 +448,17 @@ function useInneraSeo(siteUrl) {
     }
 
     script.textContent = JSON.stringify(softwareJsonLd);
-  }, [siteUrl, softwareJsonLd]);
+  }, [
+    activeMeta,
+    alternateOgLocale,
+    canonicalUrl,
+    hrefLangEntries,
+    locale,
+    ogLocale,
+    siteUrl,
+    socialImageUrl,
+    softwareJsonLd,
+  ]);
 }
 
 function SectionKicker({ label, lineColor }) {
@@ -484,10 +522,9 @@ function Modal({ title, body, cta, onClose }) {
   );
 }
 
-export default function App() {
-  useInneraSeo(SITE_URL);
-
-  const { locale } = useLanguage();
+export default function App({ forcedLocale } = {}) {
+  const { locale, alternateLocale, alternateHref, toggleLocale } = useLanguage(forcedLocale);
+  useInneraSeo(SITE_URL, locale);
   const t = copy[locale] ?? copy.en;
 
   const [modal, setModal] = useState(null);
@@ -701,24 +738,53 @@ useEffect(() => {
   alt="Innera"
   className="innera-logo"
 />
-          <a href="#apply-form" className="hover-palette nav-apply">
-            {t.nav}
-          </a>
+          <div className="header-actions">
+            <a
+              href={alternateHref}
+              className="nav-locale"
+              onClick={(event) => {
+                event.preventDefault();
+                toggleLocale();
+              }}
+              aria-label={alternateLocale === "es" ? "Ver en espanol" : "View in English"}
+            >
+              {alternateLocale.toUpperCase()}
+            </a>
+            <a href="#apply-form" className="hover-palette nav-apply">
+              {t.nav}
+            </a>
+          </div>
         </div>
       </header>
 
       <main className="container landing-main">
         <section className="section-reveal section-reveal-1 hero-section">
-          <span className="hero-brand">by TheInnerCode</span>
+          <span className="hero-brand">{t.hero.brand}</span>
           <h1 className="hero-title">
             <span>{t.hero.titleA}</span>
             <br />
             <span className="hero-title-accent animated-gradient-text">{t.hero.titleB}</span>
           </h1>
           <p className="hero-subtitle">{t.hero.subtitle}</p>
+          <div className="hero-proof" aria-label={`${t.hero.betaAccess}. ${t.hero.betaSpots}.`}>
+            <span className="hero-proof-pill">{t.hero.betaAccess}</span>
+            <span className="hero-proof-pill hero-proof-pill-count">{t.hero.betaSpots}</span>
+          </div>
           <a href="#apply-form" className="apply-hover-cycle hero-cta">
             {t.hero.cta}
           </a>
+          <div className="hero-trust" aria-label={t.hero.theoryLabel}>
+            <span className="hero-trust-brand">TheInnerCode Co.</span>
+            <span className="hero-trust-separator" aria-hidden="true" />
+            <span className="hero-trust-label">{t.hero.theoryLabel}</span>
+            <div className="hero-trust-pills">
+              {t.hero.theoryItems.map((item) => (
+                <span key={item} className="hero-trust-pill">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
           <span className="hero-line" aria-hidden="true" />
         </section>
 
@@ -907,6 +973,10 @@ useEffect(() => {
       <footer className="section-reveal section-reveal-6 landing-footer">
         <p className="footer-copy">{t.footer}</p>
       </footer>
+
+      <a href="#apply-form" className="mobile-cta-dock apply-hover-cycle">
+        {t.hero.cta}
+      </a>
     </div>
   );
 }
