@@ -171,6 +171,9 @@ const copy = {
     },
     emailInvalid: "Por favor escribe un correo valido.",
     footer: "INNERA por TheInnerCode",
+    recaptcha: "Este sitio está protegido por reCAPTCHA y aplican la {privacy} y los {terms} de Google.",
+    recaptchaPrivacy: "Política de Privacidad",
+    recaptchaTerms: "Términos de Servicio",
   },
   en: {
     nav: "Request beta access",
@@ -318,6 +321,9 @@ const copy = {
     },
     emailInvalid: "Please enter a valid email address.",
     footer: "INNERA by TheInnerCode",
+    recaptcha: "This site is protected by reCAPTCHA and the Google {privacy} and {terms} apply.",
+    recaptchaPrivacy: "Privacy Policy",
+    recaptchaTerms: "Terms of Service",
   },
 };
 
@@ -963,6 +969,17 @@ useEffect(() => {
 
       <footer className="section-reveal section-reveal-6 landing-footer">
         <p className="footer-copy">{t.footer}</p>
+        <p className="recaptcha-notice">
+          {t.recaptcha
+            .split(/(\{privacy\}|\{terms\})/)
+            .map((part, i) =>
+              part === "{privacy}" ? (
+                <a key={i} href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">{t.recaptchaPrivacy}</a>
+              ) : part === "{terms}" ? (
+                <a key={i} href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">{t.recaptchaTerms}</a>
+              ) : part
+            )}
+        </p>
       </footer>
 
       <a href="#apply-form" className="mobile-cta-dock apply-hover-cycle">

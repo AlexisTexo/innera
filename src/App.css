@@ -1,3 +1,5 @@
+.grecaptcha-badge { visibility: hidden; }
+
 :root {
   --paper: #000000;
   --ink: #f5f5f5;
@@ -555,6 +557,17 @@ a {
 
 .form-message.danger {
   color: var(--tomato);
+}
+
+.recaptcha-notice {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted, #888);
+  margin-top: 1rem;
+}
+.recaptcha-notice a {
+  color: var(--muted, #888);
+  text-decoration: underline;
 }
 
 .form-submit-wrap {
