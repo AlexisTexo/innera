@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import ReCAPTCHA from "./components/ReCAPTCHA";
+import { executeRecaptcha, preloadRecaptcha } from "./components/ReCAPTCHA";
 import useLanguage from "./components/useLanguage";
 import {
   getAlternateLocale,
@@ -539,18 +539,19 @@ export default function App({ forcedLocale } = {}) {
   });
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // ✅ reCAPTCHA
-  const recaptchaRef = useRef(null);
-  const [captchaToken, setCaptchaToken] = useState("");
+  // reCAPTCHA v3
   const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
+  useEffect(() => {
+    preloadRecaptcha(RECAPTCHA_SITE_KEY);
+  }, [RECAPTCHA_SITE_KEY]);
 
   const emailInvalid = form.email.trim().length > 0 && !EMAIL_REGEX.test(form.email.trim());
 
   const canSubmit =
     form.email.trim().length > 0 &&
     EMAIL_REGEX.test(form.email.trim()) &&
-    form.depth.length > 0 &&
-    !!captchaToken;
+    form.depth.length > 0;
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -652,6 +653,8 @@ useEffect(() => {
     setStatus("submitting");
 
     try {
+      const captchaToken = await executeRecaptcha(RECAPTCHA_SITE_KEY, "submit");
+
       const response = await fetch(`${API_URL}/testusers/test-users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -661,7 +664,7 @@ useEffect(() => {
           unclear: form.unclear.trim(),
           depth: form.depth,
           locale,
-          captchaToken, // ✅ manda token al backend
+          captchaToken,
         }),
       });
 
@@ -718,9 +721,7 @@ useEffect(() => {
         cta: t.modal.cta,
       });
     } finally {
-      // ✅ reset captcha siempre
-      recaptchaRef.current?.reset?.();
-      setCaptchaToken("");
+      // v3 doesn't need manual reset
     }
   };
 
@@ -946,16 +947,6 @@ useEffect(() => {
             {emailInvalid ? <p className="form-message error">{t.emailInvalid}</p> : null}
             {status === "success" ? <p className="form-message success">{t.form.success}</p> : null}
             {status === "error" ? <p className="form-message danger">{t.form.error}</p> : null}
-
-            {/* ✅ reCAPTCHA */}
-            <div style={{ marginTop: 14, display: "flex", justifyContent: "center" }}>
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={RECAPTCHA_SITE_KEY}
-                onChange={(token) => setCaptchaToken(token || "")}
-                onExpired={() => setCaptchaToken("")}
-              />
-            </div>
 
             <div className="form-submit-wrap">
               <button

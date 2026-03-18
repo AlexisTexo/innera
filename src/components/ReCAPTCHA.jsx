@@ -1,14 +1,12 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-
-const RECAPTCHA_SCRIPT_ID = "google-recaptcha-api";
+const RECAPTCHA_SCRIPT_ID = "google-recaptcha-v3";
 let recaptchaLoader;
 
-function loadRecaptchaApi() {
+function loadRecaptchaV3(siteKey) {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("reCAPTCHA requires a browser environment"));
   }
 
-  if (window.grecaptcha?.render) {
+  if (window.grecaptcha?.execute) {
     return Promise.resolve(window.grecaptcha);
   }
 
@@ -25,7 +23,7 @@ function loadRecaptchaApi() {
     };
 
     const waitForApi = () => {
-      if (window.grecaptcha?.render) {
+      if (window.grecaptcha?.execute) {
         resolve(window.grecaptcha);
         return;
       }
@@ -43,7 +41,7 @@ function loadRecaptchaApi() {
     if (!existingScript) {
       const script = document.createElement("script");
       script.id = RECAPTCHA_SCRIPT_ID;
-      script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
+      script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
       script.async = true;
       script.defer = true;
       script.addEventListener("error", fail, { once: true });
@@ -56,63 +54,18 @@ function loadRecaptchaApi() {
   return recaptchaLoader;
 }
 
-const ReCAPTCHA = forwardRef(function ReCAPTCHA({ sitekey, onChange, onExpired }, ref) {
-  const containerRef = useRef(null);
-  const widgetIdRef = useRef(null);
-  const onChangeRef = useRef(onChange);
-  const onExpiredRef = useRef(onExpired);
+/**
+ * Executes reCAPTCHA v3 and returns a token.
+ * Call this right before form submission.
+ */
+export async function executeRecaptcha(siteKey, action = "submit") {
+  const grecaptcha = await loadRecaptchaV3(siteKey);
+  return grecaptcha.execute(siteKey, { action });
+}
 
-  onChangeRef.current = onChange;
-  onExpiredRef.current = onExpired;
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      reset() {
-        if (widgetIdRef.current === null || !window.grecaptcha?.reset) return;
-        window.grecaptcha.reset(widgetIdRef.current);
-      },
-    }),
-    []
-  );
-
-  useEffect(() => {
-    if (!sitekey || !containerRef.current) return undefined;
-
-    let cancelled = false;
-
-    loadRecaptchaApi()
-      .then((grecaptcha) => {
-        if (cancelled || !containerRef.current || widgetIdRef.current !== null) return;
-
-        widgetIdRef.current = grecaptcha.render(containerRef.current, {
-          sitekey,
-          callback: (token) => onChangeRef.current?.(token),
-          "expired-callback": () => onExpiredRef.current?.(),
-          "error-callback": () => onExpiredRef.current?.(),
-        });
-      })
-      .catch(() => {
-        if (cancelled) return;
-        onExpiredRef.current?.();
-      });
-
-    return () => {
-      cancelled = true;
-
-      if (widgetIdRef.current !== null && window.grecaptcha?.reset) {
-        window.grecaptcha.reset(widgetIdRef.current);
-      }
-
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
-      }
-
-      widgetIdRef.current = null;
-    };
-  }, [sitekey]);
-
-  return <div ref={containerRef} />;
-});
-
-export default ReCAPTCHA;
+/**
+ * Preloads the reCAPTCHA v3 script (call on mount).
+ */
+export function preloadRecaptcha(siteKey) {
+  if (siteKey) loadRecaptchaV3(siteKey).catch(() => {});
+}
