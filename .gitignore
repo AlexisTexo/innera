@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local secrets and generated backend artifacts
+.env
+.env.*
+backend/.env
+backend/.env.*
+backend/serviceAccountKey.json
+backend/iisnode/
