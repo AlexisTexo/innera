@@ -24,7 +24,7 @@ const mailer = nodemailer.createTransport({
   secure: (process.env.SMTP_SECURE === 'true') ? true : false,
   auth: {
     user: process.env.SMTP_USER || 'no-reply@theinnercode.net',
-    pass: process.env.SMTP_PASS || 'qspqDAb56DT2.6L'
+    pass: process.env.SMTP_PASS || 'qspqDAb56DT2.6L'  
   }
 });
 
@@ -69,192 +69,130 @@ function docIdFromEmail(email) {
 }
 
 
-async function sendConfirmEmail({ to, name, confirmUrl }) {
-  const displayName = name ? String(name).trim() : '';
-  const html = `
-  <!doctype html>
-  <html lang="es">
-    <body style="margin:0; padding:0; background:#fff; font-family:Arial,Helvetica,sans-serif;">
-      <div style="max-width:560px; margin:0 auto; padding:24px 12px;">
-        <h2 style="margin:0 0 12px;">Holaa ${displayName || '👋'}</h2>
-        <p style="margin:0 0 14px; line-height:1.6;">
-          Gracias por registrarte. Para completar tu solicitud, confirma tu correo:
-        </p>
+async function sendConfirmEmail({ to, name, confirmUrl, locale }) {
+  const isEn = String(locale || 'en').startsWith('en');
 
-        <a href="${confirmUrl}"
-           style="display:inline-block; padding:12px 18px; background:#000; color:#fff; text-decoration:none; border-radius:10px; font-weight:700;">
-          Confirmar registro
-        </a>
+  const i18n = isEn ? {
+    title: 'Confirm your registration',
+    subject: 'INNERA – Confirm your registration',
+    greeting: 'Hello,',
+    received: 'We have received your request to join <strong>INNERA</strong>.',
+    notBeta: 'INNERA is not an open beta.<br />It is a controlled calibration phase.',
+    review: 'Over the next few days, our team will carefully review each application to ensure alignment between the system and its first participants.',
+    selectedTitle: 'If you are selected, you will receive:',
+    bullet1: 'Private access to the INNERA beta',
+    bullet2: 'Direct participation in building the final MVP',
+    bullet3: 'An early look at your internal diagnostic patterns',
+    bullet4: 'Priority status for the public launch',
+    note: 'Please note:<br />Selection is intentional. Not all applications will be admitted in this phase.',
+    designed: 'INNERA was designed for people willing to observe themselves with precision — not casually, but consciously.',
+    resonates: 'If this resonates with you, you are in the right place.',
+    soon: 'You will hear from us soon.',
+    confirmBtn: 'Confirm registration',
+    ignore: 'If you did not make this request, ignore this email.',
+  } : {
+    title: 'Solicitud recibida',
+    subject: 'INNERA – Confirma tu registro',
+    greeting: 'Hola,',
+    received: 'Hemos recibido tu solicitud para unirte a <strong>INNERA</strong>.',
+    notBeta: 'INNERA no es una beta abierta.<br />Es una fase de calibración controlada.',
+    review: 'Durante los próximos días, nuestro equipo revisará cuidadosamente cada solicitud para asegurar la alineación entre el sistema y sus primeros participantes.',
+    selectedTitle: 'Si eres seleccionado, recibirás:',
+    bullet1: 'Acceso privado a la beta de INNERA',
+    bullet2: 'Participación directa en la construcción del MVP final',
+    bullet3: 'Visión anticipada de tus patrones de diagnóstico interno',
+    bullet4: 'Estado prioritario para el lanzamiento público',
+    note: 'Ten en cuenta:<br />La selección es intencional. No todas las solicitudes serán admitidas en esta fase.',
+    designed: 'INNERA fue diseñado para personas dispuestas a observarse con precisión: no de forma casual, sino consciente.',
+    resonates: 'Si esto resuena contigo, estás en el lugar correcto.',
+    soon: 'Sabrás de nosotros pronto.',
+    confirmBtn: 'Confirmar registro',
+    ignore: 'Si tú no hiciste esta solicitud, ignora este correo.',
+  };
 
-        <p style="margin:16px 0 0; font-size:12px; color:#444; line-height:1.5;">
-          Si tú no hiciste esta solicitud, ignora este correo.
-        </p>
-      </div>
-    </body>
-  </html>
-  `.trim();
-
-  await mailer.sendMail({
-    from: MAIL_FROM,
-    to,
-    subject: 'Confirma tu registro en Innera',
-    html,
-  });
-}
-
-
-// Email de agradecimiento
-async function sendThanksEmail({ to, name }) {
-  const displayName = name ? String(name).trim() : '';
   const html = `
 <!doctype html>
-<html lang="es">
+<html lang="${isEn ? 'en' : 'es'}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Solicitud recibida</title>
+    <title>${i18n.title}</title>
   </head>
   <body style="margin:0; padding:0; background-color:#ffffff;">
-    <table
-      role="presentation"
-      cellpadding="0"
-      cellspacing="0"
-      border="0"
-      width="100%"
-      style="background-color:#ffffff; padding:24px 12px;"
-    >
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#ffffff; padding:24px 12px;">
       <tr>
         <td align="center">
-          <table
-            role="presentation"
-            cellpadding="0"
-            cellspacing="0"
-            border="0"
-            width="100%"
-            style="max-width:560px; background-color:#ffffff;"
-          >
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px; background-color:#ffffff;">
             <tr>
               <td style="padding:0; font-family:Arial, Helvetica, sans-serif; color:#121212;">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#000000;">
                   <tr>
                     <td align="center" style="padding:20px 24px;">
-                      <img
-                        src="https://i.imgur.com/QJIoscZ.png"
-                        alt="The Inner Code"
-                        width="160"
-                        style="display:block; width:160px; max-width:100%; height:auto; border:0;"
-                      />
+                      <img src="https://i.imgur.com/QJIoscZ.png" alt="The Inner Code" width="160" style="display:block; width:160px; max-width:100%; height:auto; border:0;" />
                     </td>
                   </tr>
                 </table>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                   <tr>
                     <td align="center" style="padding:0;">
-                      <img
-                        src="https://i.imgur.com/A4nBfcl.png"
-                        alt="INNERA"
-                        width="560"
-                        style="display:block; width:100%; max-width:560px; height:auto; border:0 "
-                      />
+                      <img src="https://i.imgur.com/pt7oclT.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" />
                     </td>
                   </tr>
                 </table>
                 <p style="margin:24px 24px 14px; font-size:28px; line-height:1.2; font-weight:700; color:#121212;">
-                  Holaa ${displayName || '👋'},
+                  ${i18n.greeting}
                 </p>
                 <p style="margin:0 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
-                  Hemos recibido tu solicitud para unirte a <strong>INNERA</strong>.
+                  ${i18n.received}
                 </p>
                 <p style="margin:0 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
-                  INNERA no es una beta abierta.<br />
-                  Es una fase de calibración controlada.
+                  ${i18n.notBeta}
                 </p>
                 <p style="margin:0 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
-                  Durante los próximos días, nuestro equipo revisará cuidadosamente cada solicitud para asegurar la alineación entre el sistema y sus primeros participantes.
+                  ${i18n.review}
                 </p>
                 <p style="margin:0 24px 8px; font-size:16px; line-height:1.6; color:#121212;">
-                  Si eres seleccionado, recibirás:
+                  ${i18n.selectedTitle}
                 </p>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:0 24px 8px;">
+                  <tr><td style="padding:0 0 6px; font-size:16px; line-height:1.6; color:#121212;">• ${i18n.bullet1}</td></tr>
+                  <tr><td style="padding:0 0 6px; font-size:16px; line-height:1.6; color:#121212;">• ${i18n.bullet2}</td></tr>
+                  <tr><td style="padding:0 0 6px; font-size:16px; line-height:1.6; color:#121212;">• ${i18n.bullet3}</td></tr>
+                  <tr><td style="padding:0 0 6px; font-size:16px; line-height:1.6; color:#121212;">• ${i18n.bullet4}</td></tr>
+                </table>
+                <p style="margin:8px 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
+                  ${i18n.note}
+                </p>
+                <p style="margin:0 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
+                  ${i18n.designed}
+                </p>
+                <p style="margin:0 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
+                  ${i18n.resonates}
+                </p>
+                <p style="margin:0 24px 20px; font-size:16px; line-height:1.6; color:#121212;">
+                  ${i18n.soon}
+                </p>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:0 24px 20px;">
                   <tr>
-                    <td style="padding:0 0 6px; font-size:16px; line-height:1.6; color:#121212;">
-                      • Acceso privado a la beta de INNERA
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding:0 0 6px; font-size:16px; line-height:1.6; color:#121212;">
-                      • Participación directa en la construcción del MVP final
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding:0 0 6px; font-size:16px; line-height:1.6; color:#121212;">
-                      • Visión anticipada de tus patrones de diagnóstico interno
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding:0 0 6px; font-size:16px; line-height:1.6; color:#121212;">
-                      • Estado prioritario para el lanzamiento público
+                    <td align="center">
+                      <a href="${confirmUrl}" style="display:inline-block; padding:12px 18px; background:#000; color:#fff; text-decoration:none; border-radius:10px; font-weight:700;">
+                        ${i18n.confirmBtn}
+                      </a>
                     </td>
                   </tr>
                 </table>
-                <p style="margin:8px 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
-                  Ten en cuenta:<br />
-                  La selección es intencional. No todas las solicitudes serán admitidas en esta fase.
-                </p>
-                <p style="margin:0 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
-                  INNERA fue diseñado para personas dispuestas a observarse con precisión: no de forma casual, sino consciente.
-                </p>
-                <p style="margin:0 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
-                  Si esto resuena contigo, estás en el lugar correcto.
-                </p>
-                <p style="margin:0 24px 28px; font-size:16px; line-height:1.6; color:#121212;">
-                  Sabrás de nosotros pronto.
+                <p style="margin:0 24px 20px; font-size:12px; color:#444; line-height:1.5;">
+                  ${i18n.ignore}
                 </p>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#000000; border-top:1px solid #1f1f1f;">
                   <tr>
                     <td align="center" style="padding:18px 24px 10px;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                         <tr>
-                          <td style="padding:0 8px;">
-                            <a href="https://www.instagram.com/inneranet/" target="_blank" style="text-decoration:none;">
-                              <img
-                                src="https://img.icons8.com/ios-filled/50/FFFFFF/instagram-new.png"
-                                alt="Instagram"
-                                width="22"
-                                style="display:block; width:22px; height:22px; border:0;"
-                              />
-                            </a>
-                          </td>
-                          <td style="padding:0 8px;">
-                            <a href="https://www.facebook.com/" target="_blank" style="text-decoration:none;">
-                              <img
-                                src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png"
-                                alt="Facebook"
-                                width="22"
-                                style="display:block; width:22px; height:22px; border:0;"
-                              />
-                            </a>
-                          </td>
-                          <td style="padding:0 8px;">
-                            <a href="https://x.com/inneramanager" target="_blank" style="text-decoration:none;">
-                              <img
-                                src="https://img.icons8.com/ios-filled/50/FFFFFF/twitterx--v1.png"
-                                alt="X"
-                                width="22"
-                                style="display:block; width:22px; height:22px; border:0;"
-                              />
-                            </a>
-                          </td>
-                          <td style="padding:0 8px;">
-                            <a href="https://www.tiktok.com/@innera.net" target="_blank" style="text-decoration:none;">
-                              <img
-                                src="https://img.icons8.com/ios-filled/50/FFFFFF/tiktok--v1.png"
-                                alt="TikTok"
-                                width="22"
-                                style="display:block; width:22px; height:22px; border:0;"
-                              />
-                            </a>
-                          </td>
+                          <td style="padding:0 8px;"><a href="https://www.instagram.com/inneranet/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/instagram-new.png" alt="Instagram" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://www.facebook.com/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png" alt="Facebook" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://x.com/inneramanager" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/twitterx--v1.png" alt="X" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://www.tiktok.com/@innera.net" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/tiktok--v1.png" alt="TikTok" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
                         </tr>
                       </table>
                     </td>
@@ -278,7 +216,104 @@ async function sendThanksEmail({ to, name }) {
   await mailer.sendMail({
     from: MAIL_FROM,
     to,
-    subject: 'Muchas Gracias por registrarte en Inner Code',
+    subject: i18n.subject,
+    html,
+  });
+}
+
+
+// Email de agradecimiento (actualmente no se llama en ningún endpoint)
+async function sendThanksEmail({ to, locale }) {
+  const isEn = String(locale || 'en').startsWith('en');
+
+  const i18n = isEn ? {
+    subject: 'INNERA - Welcome to the controlled calibration phase',
+    greeting: 'Welcome,',
+    thanks: 'Thank you for confirming your registration. Welcome to <strong>INNERA</strong>.',
+    next: 'You are now part of the controlled calibration phase. We will contact you soon with next steps.',
+    soon: 'See you soon.',
+  } : {
+    subject: 'INNERA - Bienvenido a la fase de calibración controlada ',
+    greeting: 'Bienvenido,',
+    thanks: 'Gracias por confirmar tu registro. Bienvenido a <strong>INNERA</strong>.',
+    next: 'Ahora eres parte de la fase de calibración controlada. Te contactaremos pronto con los siguientes pasos.',
+    soon: 'Nos vemos pronto.',
+  };
+
+  const html = `
+<!doctype html>
+<html lang="${isEn ? 'en' : 'es'}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${i18n.subject}</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#ffffff;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#ffffff; padding:24px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px; background-color:#ffffff;">
+            <tr>
+              <td style="padding:0; font-family:Arial, Helvetica, sans-serif; color:#121212;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#000000;">
+                  <tr>
+                    <td align="center" style="padding:20px 24px;">
+                      <img src="https://i.imgur.com/QJIoscZ.png" alt="The Inner Code" width="160" style="display:block; width:160px; max-width:100%; height:auto; border:0;" />
+                    </td>
+                  </tr>
+                </table>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td align="center" style="padding:0;">
+                      <img src="https://i.imgur.com/xLv8O0q.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" />
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:24px 24px 14px; font-size:28px; line-height:1.2; font-weight:700; color:#121212;">
+                  ${i18n.greeting}
+                </p>
+                <p style="margin:0 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
+                  ${i18n.thanks}
+                </p>
+                <p style="margin:0 24px 12px; font-size:16px; line-height:1.6; color:#121212;">
+                  ${i18n.next}
+                </p>
+                <p style="margin:0 24px 28px; font-size:16px; line-height:1.6; color:#121212;">
+                  ${i18n.soon}
+                </p>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#000000; border-top:1px solid #1f1f1f;">
+                  <tr>
+                    <td align="center" style="padding:18px 24px 10px;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                          <td style="padding:0 8px;"><a href="https://www.instagram.com/inneranet/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/instagram-new.png" alt="Instagram" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://www.facebook.com/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png" alt="Facebook" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://x.com/inneramanager" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/twitterx--v1.png" alt="X" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://www.tiktok.com/@innera.net" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/tiktok--v1.png" alt="TikTok" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding:0 24px 22px; font-size:12px; line-height:1.5; color:#ffffff;">
+                      INNERA by TheInnerCode
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+`.trim();
+
+  await mailer.sendMail({
+    from: MAIL_FROM,
+    to,
+    subject: i18n.subject,
     html,
   });
 }
@@ -358,7 +393,7 @@ router.post('/test-users', async (req, res) => {
   //  const confirmUrl = `${SITE_URL}/api/testusers/test-users/confirm?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`;
 const confirmUrl = `${API_BASE_URL}/testusers/test-users/confirm?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`;
     try {
-      await sendConfirmEmail({ to: email, name, confirmUrl });
+      await sendConfirmEmail({ to: email, name, confirmUrl, locale });
     } catch (e) {
       console.error('No se pudo enviar correo de confirmación:', e.message);
       // si quieres, puedes decidir borrar el pending si falla el mail:
@@ -531,7 +566,7 @@ router.get('/test-users/confirm', async (req, res) => {
       total = snap.size;
     }
 
-    if (total >= 100) {
+    if (total >= 300) {
       // opcional: borra pending para no dejar basura
       await pendingRef.delete().catch(() => {});
       //return res.redirect(`${SITE_URL}/innera?confirmed=0&closed=1`);
@@ -551,6 +586,11 @@ router.get('/test-users/confirm', async (req, res) => {
 
     // borra pending
     await pendingRef.delete().catch(() => {});
+
+    // Enviar correo de agradecimiento (no bloquea el redirect)
+    sendThanksEmail({ to: email, locale: pending.locale || 'en' }).catch(err => {
+      console.error('No se pudo enviar correo de agradecimiento:', err.message);
+    });
 
     // Redirige a tu landing con flag de éxito
    // return res.redirect(`${SITE_URL}/innera?confirmed=1`);

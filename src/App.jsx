@@ -47,7 +47,7 @@ const copy = {
       subtitle: "INNERA es el primer sistema de mapeo del mundo interior.",
       cta: "Solicitar acceso beta",
       betaAccess: "Acceso beta cerrado",
-      betaSpots: "300 lugares disponibles",
+      betaSpots: "{count}/300 lugares disponibles",
       theoryLabel: "Fundamentos teoricos",
       theoryItems: ["Jung", "Porges", "Deci-Ryan"],
     },
@@ -197,7 +197,7 @@ const copy = {
       subtitle: "INNERA is the first system for mapping the inner world.",
       cta: "Request beta access",
       betaAccess: "Closed beta access",
-      betaSpots: "300 spots available",
+      betaSpots: "{count}/300 spots available",
       theoryLabel: "Theoretical foundations",
       theoryItems: ["Jung", "Porges", "Deci-Ryan"],
     },
@@ -544,6 +544,7 @@ export default function App({ forcedLocale } = {}) {
     depth: "curiosity",
   });
   const [isScrolled, setIsScrolled] = useState(false);
+  const [spotsUsed, setSpotsUsed] = useState(null);
 
   // reCAPTCHA v3
   const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
@@ -560,6 +561,13 @@ export default function App({ forcedLocale } = {}) {
     form.depth.length > 0;
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    fetch(`${API_URL}/testusers/test-users/count`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data?.count != null) setSpotsUsed(data.count); })
+      .catch(() => {});
+  }, [API_URL]);
 
 useEffect(() => {
   const params = new URLSearchParams(window.location.search);
@@ -775,7 +783,9 @@ useEffect(() => {
           <p className="hero-subtitle">{t.hero.subtitle}</p>
           <div className="hero-proof" aria-label={`${t.hero.betaAccess}. ${t.hero.betaSpots}.`}>
             <span className="hero-proof-pill">{t.hero.betaAccess}</span>
-            <span className="hero-proof-pill hero-proof-pill-count">{t.hero.betaSpots}</span>
+            <span className="hero-proof-pill hero-proof-pill-count">
+              {spotsUsed != null ? t.hero.betaSpots.replace("{count}", spotsUsed) : t.hero.betaSpots.replace("{count}/", "")}
+            </span>
           </div>
           <a href="#apply-form" className="apply-hover-cycle hero-cta">
             {t.hero.cta}
@@ -907,7 +917,7 @@ useEffect(() => {
                     value={form.email}
                     onChange={updateForm("email")}
                     className="field-input"
-                    placeholder="you@email.com"
+                    placeholder=""
                   />
                 </label>
               </li>
