@@ -187,9 +187,10 @@ async function sendConfirmEmail({ to, name, confirmUrl, locale }) {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                           <td style="padding:0 8px;"><a href="https://www.instagram.com/inneranet/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/instagram-new.png" alt="Instagram" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
-                          <td style="padding:0 8px;"><a href="https://www.facebook.com/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png" alt="Facebook" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
-                          <td style="padding:0 8px;"><a href="https://x.com/inneramanager" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/twitterx--v1.png" alt="X" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://www.facebook.com/people/Innera/61588072216975/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png" alt="Facebook" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://x.com/InneraManager" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/twitterx--v1.png" alt="X" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
                           <td style="padding:0 8px;"><a href="https://www.tiktok.com/@innera.net" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/tiktok--v1.png" alt="TikTok" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://www.linkedin.com/in/innera-net-0549253b2/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/linkedin.png" alt="LinkedIn" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
                         </tr>
                       </table>
                     </td>
@@ -284,9 +285,10 @@ async function sendThanksEmail({ to, locale }) {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                           <td style="padding:0 8px;"><a href="https://www.instagram.com/inneranet/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/instagram-new.png" alt="Instagram" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
-                          <td style="padding:0 8px;"><a href="https://www.facebook.com/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png" alt="Facebook" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
-                          <td style="padding:0 8px;"><a href="https://x.com/inneramanager" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/twitterx--v1.png" alt="X" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://www.facebook.com/people/Innera/61588072216975/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png" alt="Facebook" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://x.com/InneraManager" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/twitterx--v1.png" alt="X" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
                           <td style="padding:0 8px;"><a href="https://www.tiktok.com/@innera.net" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/tiktok--v1.png" alt="TikTok" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
+                          <td style="padding:0 8px;"><a href="https://www.linkedin.com/in/innera-net-0549253b2/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/linkedin.png" alt="LinkedIn" width="22" style="display:block; width:22px; height:22px; border:0;" /></a></td>
                         </tr>
                       </table>
                     </td>
