@@ -858,4 +858,23 @@ router.get('/test-users/confirm', async (req, res) => {
   }
 });
 
+// GET /test-users/newsletter-log — historial de envíos (protegido con JWT)
+router.get('/test-users/newsletter-log', verifyToken, (_req, res) => {
+  try {
+    const logPath = path.join(__dirname, '../../newsletters/sent-log.json');
+    if (!fs.existsSync(logPath)) return res.status(200).json({ campaigns: [] });
+
+    const raw = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+
+    const campaigns = Object.entries(raw)
+      .map(([name, emails]) => ({ name, sent: emails.length, emails }))
+      .sort((a, b) => b.name.localeCompare(a.name));
+
+    return res.status(200).json({ campaigns });
+  } catch (e) {
+    console.error('Error newsletter-log:', e);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
