@@ -104,9 +104,29 @@ module.exports = {
 
 ### 2. Correr el envío
 
+**Local (Mac):**
 ```bash
 cd backend
 node scripts/send-newsletter.js 2026-04-07-edicion-1
+```
+
+**En el servidor Windows (Azure/IIS):**
+```cmd
+cd C:\inetpub\wwwroot\Repos\TheInnerCode_API
+node scripts/send-newsletter.js 2026-04-07-edicion-1
+```
+
+**Programar con Windows Task Scheduler (PowerShell como admin en el servidor):**
+```powershell
+$action = New-ScheduledTaskAction `
+  -Execute "node.exe" `
+  -Argument "scripts/send-newsletter.js 2026-04-07-edicion-1" `
+  -WorkingDirectory "C:\inetpub\wwwroot\Repos\TheInnerCode_API"
+
+$trigger = New-ScheduledTaskTrigger -Once -At "11:45AM"
+
+Register-ScheduledTask -TaskName "INNERA-Newsletter-Edicion1" `
+  -Action $action -Trigger $trigger -RunLevel Highest
 ```
 
 ### 3. Output esperado
