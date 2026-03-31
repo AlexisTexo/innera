@@ -56,7 +56,7 @@ Artículo, paper, video o podcast externo que complemente el tema. Fuente de alt
 | **La Señal** | '73% de la Gen Z reporta agotamiento digital — y aun así pasa 7.2 horas diarias frente a una pantalla.' (Human8, 2025). Implicación: La primera respuesta al agotamiento no es desconectarse. Es entender qué dentro de ti se está agotando. | '73% of Gen Z reports digital exhaustion — yet still spends 7.2 hours a day in front of a screen.' (Human8, 2025). Implication: The first response to exhaustion isn't to disconnect. It's to understand what inside you is burning out. |
 | **Desde el IBP** | ¿Qué es el Inner Blueprint Profile? No es un test. Es un sistema de cartografía dinámica. Mide 5 dimensiones en tiempo real y 3 dimensiones de coherencia semanal. La semana que viene: el primer índice. | What is the Inner Blueprint Profile? It's not a test. It's a dynamic mapping system. It measures 5 real-time dimensions and 3 weekly coherence dimensions. Next week: the first index. |
 | **La Pregunta** | ¿Cuándo fue la última vez que actuaste desde claridad real — y no desde urgencia, hábito o expectativa externa? | When was the last time you acted from real clarity — not from urgency, habit, or external expectation? |
-| **El Recurso** | 'Why the brain is not an input-output machine' — Anil Seth, The Atlantic. | 'Why the brain is not an input-output machine' — Anil Seth, The Atlantic. |
+| **El Recurso** | 'Tu cerebro alucina tu realidad consciente' — Anil Seth, TED. https://www.ted.com/talks/anil_seth_your_brain_hallucinates_your_conscious_reality | 'Your brain hallucinates your conscious reality' — Anil Seth, TED. https://www.ted.com/talks/anil_seth_your_brain_hallucinates_your_conscious_reality |
 
 ---
 
@@ -213,9 +213,106 @@ Sin dependencias nuevas. El script usa:
 
 ---
 
+## Redes Sociales (usar en todos los footers de email)
+
+| Red | URL |
+|---|---|
+| Instagram | https://www.instagram.com/inneranet/ |
+| Facebook | https://www.facebook.com/people/Innera/61588072216975/ |
+| X / Twitter | https://x.com/InneraManager |
+| TikTok | https://www.tiktok.com/@innera.net |
+| LinkedIn | https://www.linkedin.com/in/innera-net-0549253b2/ |
+
+> Siempre verificar que los links de recursos externos existan antes de incluirlos en templates.
+
+---
+
+## Comandos de envío y programación
+
+### Envío manual — servidor Windows (CMD)
+
+```cmd
+cd C:\inetpub\wwwroot\Repos\TheInnerCode_API
+node scripts/send-newsletter.js 2026-04-07-edicion-1
+```
+
+El output queda en consola. Para guardarlo en un archivo de log:
+
+```cmd
+cd C:\inetpub\wwwroot\Repos\TheInnerCode_API
+node scripts/send-newsletter.js 2026-04-07-edicion-1 >> newsletters\send-log-output.txt 2>&1
+```
+
+### Programar envío único — PowerShell como admin en el servidor
+
+```powershell
+$campaign = "2026-04-07-edicion-1"
+$workDir  = "C:\inetpub\wwwroot\Repos\TheInnerCode_API"
+$logFile  = "$workDir\newsletters\send-log-output.txt"
+
+$action = New-ScheduledTaskAction `
+  -Execute "cmd.exe" `
+  -Argument "/c node scripts/send-newsletter.js $campaign >> `"$logFile`" 2>&1" `
+  -WorkingDirectory $workDir
+
+$trigger = New-ScheduledTaskTrigger -Once -At "11:45AM"
+
+Register-ScheduledTask `
+  -TaskName "INNERA-Newsletter-$campaign" `
+  -Action $action `
+  -Trigger $trigger `
+  -RunLevel Highest `
+  -Force
+```
+
+### Verificar que la tarea está registrada
+
+```powershell
+Get-ScheduledTask | Where-Object { $_.TaskName -like "INNERA-*" }
+```
+
+### Correr la tarea inmediatamente (sin esperar la hora)
+
+```powershell
+Start-ScheduledTask -TaskName "INNERA-Newsletter-2026-04-07-edicion-1"
+```
+
+### Eliminar la tarea después del envío
+
+```powershell
+Unregister-ScheduledTask -TaskName "INNERA-Newsletter-2026-04-07-edicion-1" -Confirm:$false
+```
+
+### Programar envío recurrente (todos los martes 9am) — para futuras ediciones
+
+```powershell
+# Primero actualiza $campaign con el nombre de la edición a enviar ese martes
+$campaign = "2026-04-14-edicion-2"
+$workDir  = "C:\inetpub\wwwroot\Repos\TheInnerCode_API"
+$logFile  = "$workDir\newsletters\send-log-output.txt"
+
+$action = New-ScheduledTaskAction `
+  -Execute "cmd.exe" `
+  -Argument "/c node scripts/send-newsletter.js $campaign >> `"$logFile`" 2>&1" `
+  -WorkingDirectory $workDir
+
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Tuesday -At "09:00AM"
+
+Register-ScheduledTask `
+  -TaskName "INNERA-Newsletter-Semanal" `
+  -Action $action `
+  -Trigger $trigger `
+  -RunLevel Highest `
+  -Force
+```
+
+> Para cambiar la edición de la semana siguiente, basta con actualizar `-Argument` en la tarea con `Set-ScheduledTask`.
+
+---
+
 ## Pasos de implementación
 
-1. Crear `backend/newsletters/sent-log.json` vacío (`{}`)
-2. Crear `backend/scripts/send-newsletter.js`
-3. Crear `backend/newsletters/templates/2026-04-07-edicion-1.js` con contenido de Edición #1
+1. ✅ Crear `backend/newsletters/sent-log.json` vacío (`{}`)
+2. ✅ Crear `backend/scripts/send-newsletter.js`
+3. ✅ Crear `backend/newsletters/templates/2026-04-07-edicion-1.js` con contenido de Edición #1
 4. Probar con un email de prueba antes del envío masivo
