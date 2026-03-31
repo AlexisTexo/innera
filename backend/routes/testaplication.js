@@ -134,9 +134,6 @@ async function sendConfirmEmail({ to, name, confirmUrl, locale }) {
                 </table>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                   <tr>
-                    <td align="center" style="padding:0;">
-                      <img src="https://i.imgur.com/pt7oclT.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" />
-                    </td>
                   </tr>
                 </table>
                 <p style="margin:24px 24px 14px; font-size:28px; line-height:1.2; font-weight:700; color:#121212;">
@@ -376,6 +373,9 @@ router.post('/test-users', async (req, res) => {
     const expiresAtMs = Date.now() + (24 * 60 * 60 * 1000); // 24h
     const expiresAt = admin.firestore.Timestamp.fromMillis(expiresAtMs);
 
+    const userAgent = req.headers['user-agent'] || '';
+    const referrer = req.headers['referer'] || req.headers['referrer'] || '';
+
     await pendingRef.set({
       email,
       name,
@@ -384,6 +384,9 @@ router.post('/test-users', async (req, res) => {
       stopReason,
       unclear,
       locale,
+      ip: ip || '',
+      userAgent,
+      referrer,
       tokenHash,
       expiresAt,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -470,6 +473,10 @@ router.get('/test-users/export.xlsx', verifyToken, async (req, res) => {
 // GET /test-users/all | Devuelve todos los usuarios registrados en TestUsers
 router.get('/test-users/all', verifyToken, async (req, res) => {
   try {
+    const showUsers = String(process.env.ANALYTICS_SHOW_USERS || '').toUpperCase() === 'TRUE';
+    if (!showUsers) {
+      return res.status(403).json({ message: 'User data access is disabled' });
+    }
     const snapshot = await db.collection('TestUsers')
       .orderBy('dateCreation', 'asc')
       .get();
@@ -485,7 +492,11 @@ router.get('/test-users/all', verifyToken, async (req, res) => {
         stopReason: data.stopReason || '',
         unclear: data.unclear || '',
         locale: data.locale || 'en',
-        dateCreation: data.dateCreation ? data.dateCreation.toDate().toISOString() : null
+        ip: data.ip || '',
+        userAgent: data.userAgent || '',
+        referrer: data.referrer || '',
+        dateCreation: data.dateCreation ? data.dateCreation.toDate().toISOString() : null,
+        confirmedAt: data.confirmedAt ? data.confirmedAt.toDate().toISOString() : null,
       };
     });
 
@@ -498,6 +509,245 @@ router.get('/test-users/all', verifyToken, async (req, res) => {
     return res.status(500).json({ message: 'Error al obtener usuarios', error: error.message });
   }
 });
+
+/* =========================
+   Rate limiter por IP (en memoria)
+   ========================= */
+const loginAttempts = new Map(); // ip → { count, firstAttempt, lockedUntil }
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 15 * 60 * 1000;  // 15 min ventana
+const LOCKOUT_MS = 30 * 60 * 1000; // 30 min bloqueo
+
+function getLoginAttempt(ip) {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (!entry) return null;
+  // limpiar entradas viejas
+  if (now - entry.firstAttempt > WINDOW_MS && (!entry.lockedUntil || now > entry.lockedUntil)) {
+    loginAttempts.delete(ip);
+    return null;
+  }
+  return entry;
+}
+
+function recordFailedAttempt(ip) {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip) || { count: 0, firstAttempt: now, lockedUntil: 0 };
+  entry.count++;
+  if (entry.count >= MAX_ATTEMPTS) {
+    entry.lockedUntil = now + LOCKOUT_MS;
+  }
+  loginAttempts.set(ip, entry);
+  return entry;
+}
+
+function clearAttempts(ip) {
+  loginAttempts.delete(ip);
+}
+
+// Limpieza periódica cada 10 min
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of loginAttempts) {
+    if (now - entry.firstAttempt > WINDOW_MS && (!entry.lockedUntil || now > entry.lockedUntil)) {
+      loginAttempts.delete(ip);
+    }
+  }
+}, 10 * 60 * 1000);
+
+// POST /test-users/analytics-login — login dedicado para analytics
+router.post('/test-users/analytics-login', async (req, res) => {
+  try {
+    const ip =
+      (req.headers['x-forwarded-for'] || '').toString().split(',')[0].trim() ||
+      req.socket?.remoteAddress || 'unknown';
+
+    // Revisar si la IP está bloqueada
+    const attempt = getLoginAttempt(ip);
+    if (attempt?.lockedUntil && Date.now() < attempt.lockedUntil) {
+      const remainMin = Math.ceil((attempt.lockedUntil - Date.now()) / 60000);
+      return res.status(429).json({
+        message: `Too many attempts. Try again in ${remainMin} min.`,
+        locked: true,
+        retryInMs: attempt.lockedUntil - Date.now(),
+      });
+    }
+
+    const { email, password } = req.body || {};
+    const validUser = process.env.ANALYTICS_USER;
+    const validPass = process.env.ANALYTICS_PASS;
+
+    if (!validUser || !validPass) {
+      return res.status(500).json({ message: 'Analytics credentials not configured' });
+    }
+
+    if (
+      String(email).trim().toLowerCase() !== validUser.trim().toLowerCase() ||
+      password !== validPass
+    ) {
+      const entry = recordFailedAttempt(ip);
+      const remaining = Math.max(0, MAX_ATTEMPTS - entry.count);
+      return res.status(401).json({
+        message: remaining > 0
+          ? `Invalid credentials. ${remaining} attempt${remaining === 1 ? '' : 's'} left.`
+          : 'Account locked. Too many failed attempts.',
+        attemptsRemaining: remaining,
+      });
+    }
+
+    // Login exitoso → limpiar intentos
+    clearAttempts(ip);
+
+    const token = jwt.sign(
+      { role: 'analytics', email: validUser },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    const showUsers = String(process.env.ANALYTICS_SHOW_USERS || '').toUpperCase() === 'TRUE';
+
+    return res.status(200).json({ token, showUsers });
+  } catch (error) {
+    console.error('Error POST /test-users/analytics-login:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /test-users/analytics — resumen agregado (protegido con JWT)
+router.get('/test-users/analytics', verifyToken, async (_req, res) => {
+  try {
+    const [confirmedSnap, pendingSnap] = await Promise.all([
+      db.collection('TestUsers').get(),
+      db.collection('PendingTestUsers').get(),
+    ]);
+
+    const confirmed = confirmedSnap.docs.map(d => d.data());
+    const pending = pendingSnap.docs.map(d => d.data());
+
+    // — Conteos generales —
+    const totalConfirmed = confirmed.length;
+    const totalPending = pending.length;
+    const spotsRemaining = Math.max(0, 300 - totalConfirmed);
+
+    // — Distribución por locale —
+    const localeCount = { en: 0, es: 0 };
+    confirmed.forEach(u => {
+      const loc = String(u.locale || 'en').startsWith('en') ? 'en' : 'es';
+      localeCount[loc]++;
+    });
+
+    // — Distribución por depth —
+    const depthCount = {};
+    confirmed.forEach(u => {
+      const d = u.depth || 'curiosity';
+      depthCount[d] = (depthCount[d] || 0) + 1;
+    });
+
+    // — Registros por día (últimos 30 días) —
+    const now = Date.now();
+    const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+    const dailyMap = {};
+    confirmed.forEach(u => {
+      const ts = u.dateCreation?.toMillis?.() ?? 0;
+      if (ts >= thirtyDaysAgo) {
+        const day = new Date(ts).toISOString().slice(0, 10);
+        dailyMap[day] = (dailyMap[day] || 0) + 1;
+      }
+    });
+    const registrationsPerDay = Object.entries(dailyMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, count]) => ({ date, count }));
+
+    // — Tiempo promedio de confirmación (ms) —
+    let avgConfirmTimeMs = null;
+    const confirmTimes = confirmed
+      .filter(u => u.dateCreation?.toMillis && u.confirmedAt?.toMillis)
+      .map(u => u.confirmedAt.toMillis() - u.dateCreation.toMillis())
+      .filter(ms => ms >= 0);
+    if (confirmTimes.length) {
+      avgConfirmTimeMs = Math.round(confirmTimes.reduce((a, b) => a + b, 0) / confirmTimes.length);
+    }
+
+    // — Tasa de conversión (confirmados / (confirmados + pendientes)) —
+    const conversionRate = (totalConfirmed + totalPending) > 0
+      ? +(totalConfirmed / (totalConfirmed + totalPending) * 100).toFixed(1)
+      : 0;
+
+    // — Registros hoy —
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const registeredToday = confirmed.filter(u => {
+      const ts = u.dateCreation?.toMillis?.() ?? 0;
+      return ts > 0 && new Date(ts).toISOString().slice(0, 10) === todayStr;
+    }).length;
+    const pendingToday = pending.filter(u => {
+      const ts = u.createdAt?.toMillis?.() ?? 0;
+      return ts > 0 && new Date(ts).toISOString().slice(0, 10) === todayStr;
+    }).length;
+
+    // — Top referrers —
+    const refMap = {};
+    confirmed.forEach(u => {
+      let ref = String(u.referrer || '').trim();
+      if (!ref) ref = 'Direct';
+      else {
+        try { ref = new URL(ref).hostname; } catch { /* keep raw */ }
+      }
+      refMap[ref] = (refMap[ref] || 0) + 1;
+    });
+    const topReferrers = Object.entries(refMap)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10)
+      .map(([source, count]) => ({ source, count }));
+
+    // — Top dispositivos (simplificado) —
+    const deviceMap = { mobile: 0, desktop: 0, other: 0 };
+    confirmed.forEach(u => {
+      const ua = String(u.userAgent || '').toLowerCase();
+      if (/mobile|android|iphone|ipad/.test(ua)) deviceMap.mobile++;
+      else if (/windows|macintosh|linux/.test(ua)) deviceMap.desktop++;
+      else deviceMap.other++;
+    });
+
+    // — Pendientes expirados (token ya venció) —
+    const expiredPending = pending.filter(u => {
+      const exp = u.expiresAt?.toMillis?.() ?? 0;
+      return exp > 0 && now > exp;
+    }).length;
+
+    // — Últimos 5 registros confirmados —
+    const recentUsers = confirmed
+      .filter(u => u.dateCreation?.toMillis)
+      .sort((a, b) => b.dateCreation.toMillis() - a.dateCreation.toMillis())
+      .slice(0, 5)
+      .map(u => ({
+        email: u.email?.replace(/(.{2})(.*)(@.*)/, '$1***$3') || '***',
+        locale: u.locale || 'en',
+        depth: u.depth || 'curiosity',
+        date: new Date(u.dateCreation.toMillis()).toISOString(),
+      }));
+
+    return res.status(200).json({
+      totalConfirmed,
+      totalPending,
+      expiredPending,
+      spotsRemaining,
+      conversionRate,
+      avgConfirmTimeMs,
+      registeredToday,
+      pendingToday,
+      localeCount,
+      depthCount,
+      deviceCount: deviceMap,
+      topReferrers,
+      recentUsers,
+      registrationsPerDay,
+    });
+  } catch (error) {
+    console.error('Error GET /test-users/analytics:', error);
+    return res.status(500).json({ message: 'Error al obtener analíticas', error: error.message });
+  }
+});
+
 async function verifyRecaptcha({ token, ip }) {
   const secret = process.env.RECAPTCHA_SECRET_KEY;
 
@@ -532,6 +782,8 @@ router.get('/test-users/confirm', async (req, res) => {
 
     const pending = pendingSnap.data() || {};
     const now = Date.now();
+    const locale = String(pending.locale || 'en').startsWith('es') ? 'es' : 'en';
+    const localePath = locale === 'es' ? '/innera/es' : '/innera';
 
     const expiresAtMs = pending.expiresAt?.toMillis?.() ?? 0;
     if (!expiresAtMs || now > expiresAtMs) {
@@ -553,7 +805,7 @@ router.get('/test-users/confirm', async (req, res) => {
     if (confirmedSnap.exists) {
       await pendingRef.delete().catch(() => {});
       //return res.redirect(`${SITE_URL}/innera?confirmed=1&already=1`);
-      return res.redirect(`${SITE_URL}/?confirmed=1&already=1`);
+      return res.redirect(`${SITE_URL}${localePath}?confirmed=1&already=1`);
     }
 
     // ✅ Aquí sí aplicas el límite (porque ya confirmó)
@@ -570,7 +822,7 @@ router.get('/test-users/confirm', async (req, res) => {
       // opcional: borra pending para no dejar basura
       await pendingRef.delete().catch(() => {});
       //return res.redirect(`${SITE_URL}/innera?confirmed=0&closed=1`);
-      return res.redirect(`${SITE_URL}/?confirmed=0&closed=1`);
+      return res.redirect(`${SITE_URL}${localePath}?confirmed=0&closed=1`);
     }
 
     // Guardar ya confirmado en TestUsers
@@ -580,6 +832,9 @@ router.get('/test-users/confirm', async (req, res) => {
       stopReason: pending.stopReason || '',
       unclear: pending.unclear || '',
       locale: pending.locale || 'en',
+      ip: pending.ip || '',
+      userAgent: pending.userAgent || '',
+      referrer: pending.referrer || '',
       dateCreation: admin.firestore.FieldValue.serverTimestamp(),
       confirmedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -594,7 +849,7 @@ router.get('/test-users/confirm', async (req, res) => {
 
     // Redirige a tu landing con flag de éxito
    // return res.redirect(`${SITE_URL}/innera?confirmed=1`);
-    return res.redirect(`${SITE_URL}/?confirmed=1`);
+    return res.redirect(`${SITE_URL}${localePath}?confirmed=1`);
   } catch (e) {
     console.error('Error confirm:', e);
     return res.status(500).send('Server error');
