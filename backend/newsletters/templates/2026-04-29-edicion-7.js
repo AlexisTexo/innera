@@ -1,7 +1,7 @@
 module.exports = {
   subject: {
-    en: 'The Inner Signal #7 — Coherence as competitive advantage',
-    es: 'The Inner Signal #7 — La coherencia como ventaja competitiva',
+    en: 'The Inner Signal — Coherence as competitive advantage',
+    es: 'The Inner Signal — La coherencia como ventaja competitiva',
   },
 
   html: (user) => {
@@ -69,7 +69,7 @@ module.exports = {
       section5Label: 'LECTURA RECOMENDADA',
       section5Body: `<strong>The Making of a Corporate Athlete</strong> — Jim Loehr & Tony Schwartz, Harvard Business Review`,
       section5Sub: 'Uno de los textos más citados sobre rendimiento sostenible y gestión de la energía interna. El argumento para tratar los recursos interiores como recursos profesionales.',
-      section5Url: 'https://hbr.org/2001/10/the-making-of-a-corporate-athlete',
+      section5Url: 'https://hbr.org/2001/01/the-making-of-a-corporate-athlete',
       section5Cta: 'Leer →',
       footerLine: 'Recibes esto porque eres parte de la fase de calibración controlada de INNERA.',
       unsubscribe: 'Si ya no deseas recibir The Inner Signal, responde a este correo.',
@@ -93,7 +93,7 @@ module.exports = {
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px; background-color:#ffffff;">
           <tr><td style="background-color:#000000; padding:20px 24px;" align="center"><img src="https://i.imgur.com/QJIoscZ.png" alt="The Inner Code" width="140" style="display:block; width:140px; max-width:100%; height:auto; border:0;" /></td></tr>
           <tr><td style="background-color:#000000; padding:0 24px 16px;" align="center"><p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:11px; letter-spacing:2px; color:#888888; text-transform:uppercase;">${i18n.headerLabel}</p></td></tr>
-          <tr><td style="padding:0;" align="center"><img src="https://i.imgur.com/xLv8O0q.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" /></td></tr>
+          <tr><td style="padding:0;" align="center"><img src="https://i.imgur.com/xuIRfBn.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" /></td></tr>
           <tr><td style="padding:28px 24px 0; font-family:Arial, Helvetica, sans-serif;">
             <p style="margin:0 0 4px; font-size:11px; letter-spacing:2px; color:#888888; text-transform:uppercase;">THE INNER SIGNAL · ${i18n.editionLabel}</p>
             <h1 style="margin:6px 0 0; font-size:26px; font-weight:700; line-height:1.2; color:#121212;">${i18n.title}</h1>

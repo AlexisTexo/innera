@@ -121,7 +121,7 @@ module.exports = {
             <!-- Banner INNERA -->
             <tr>
               <td style="padding:0;" align="center">
-                <img src="https://i.imgur.com/xLv8O0q.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" />
+                <img src="https://i.imgur.com/1BvpaxR.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" />
               </td>
             </tr>
 

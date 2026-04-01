@@ -87,9 +87,14 @@ export const getLocaleFromPath = (pathname) => {
   return DEFAULT_LOCALE;
 };
 
+export const ANALYTICS_PATH = "/analytics";
+
+export const isAnalyticsPath = (pathname) => normalizePath(pathname) === ANALYTICS_PATH;
+
 export const isValidAppPath = (pathname, options = {}) => {
   const path = normalizePath(pathname);
   if (options.includeRoot && path === "/") return true;
+  if (path === ANALYTICS_PATH) return true;
   return path === LOCALE_PATHS.en || path === LOCALE_PATHS.es;
 };
 

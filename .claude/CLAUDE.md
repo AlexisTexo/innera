@@ -246,16 +246,21 @@ node scripts/send-newsletter.js 2026-04-07-edicion-1 >> newsletters\send-log-out
 ### Programar envío único — PowerShell como admin en el servidor
 
 ```powershell
+# 1. Encontrar dónde está node.exe
+$nodePath = (Get-Command node).Source
+Write-Host "Node en: $nodePath"
+
+# 2. Registrar la tarea con path completo a node y hora correcta
 $campaign = "2026-04-07-edicion-1"
 $workDir  = "C:\inetpub\wwwroot\Repos\TheInnerCode_API"
 $logFile  = "$workDir\newsletters\send-log-output.txt"
 
 $action = New-ScheduledTaskAction `
-  -Execute "cmd.exe" `
-  -Argument "/c node scripts/send-newsletter.js $campaign >> `"$logFile`" 2>&1" `
+  -Execute $nodePath `
+  -Argument "scripts/send-newsletter.js $campaign" `
   -WorkingDirectory $workDir
 
-$trigger = New-ScheduledTaskTrigger -Once -At "11:45AM"
+$trigger = New-ScheduledTaskTrigger -Once -At "1:12PM"
 
 Register-ScheduledTask `
   -TaskName "INNERA-Newsletter-$campaign" `

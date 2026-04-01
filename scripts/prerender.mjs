@@ -110,6 +110,14 @@ for (const locale of SUPPORTED_LOCALES) {
   await writeFile(path.join(targetDir, "index.html"), localizedPage, "utf8");
 }
 
+// /analytics — SPA shell (no SSR needed, login-gated)
+const analyticsDir = path.join(distDir, "analytics");
+await mkdir(analyticsDir, { recursive: true });
+const analyticsHtml = template
+  .replace(/<title>[\s\S]*?<\/title>/, "<title>INNERA Analytics</title>")
+  .replace(/<html lang="[^"]*">/, '<html lang="en">');
+await writeFile(path.join(analyticsDir, "index.html"), analyticsHtml, "utf8");
+
 const defaultDestination = LOCALE_PATHS[DEFAULT_LOCALE];
 const defaultCanonicalUrl = getLocaleUrl("https://innera.theinnercode.net", DEFAULT_LOCALE);
 await writeFile(templatePath, createRedirectPage(defaultDestination, defaultCanonicalUrl), "utf8");

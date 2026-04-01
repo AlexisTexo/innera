@@ -1,7 +1,7 @@
 module.exports = {
   subject: {
-    en: 'The Inner Signal #8 — The co-founders of INNERA',
-    es: 'The Inner Signal #8 — Los co-fundadores de INNERA',
+    en: 'The Inner Signal — The co-founders of INNERA',
+    es: 'The Inner Signal — Los co-fundadores de INNERA',
   },
 
   html: (user) => {
@@ -93,7 +93,7 @@ module.exports = {
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px; background-color:#ffffff;">
           <tr><td style="background-color:#000000; padding:20px 24px;" align="center"><img src="https://i.imgur.com/QJIoscZ.png" alt="The Inner Code" width="140" style="display:block; width:140px; max-width:100%; height:auto; border:0;" /></td></tr>
           <tr><td style="background-color:#000000; padding:0 24px 16px;" align="center"><p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:11px; letter-spacing:2px; color:#888888; text-transform:uppercase;">${i18n.headerLabel}</p></td></tr>
-          <tr><td style="padding:0;" align="center"><img src="https://i.imgur.com/xLv8O0q.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" /></td></tr>
+          <tr><td style="padding:0;" align="center"><img src="https://i.imgur.com/0jAMS0W.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" /></td></tr>
           <tr><td style="padding:28px 24px 0; font-family:Arial, Helvetica, sans-serif;">
             <p style="margin:0 0 4px; font-size:11px; letter-spacing:2px; color:#888888; text-transform:uppercase;">THE INNER SIGNAL · ${i18n.editionLabel}</p>
             <h1 style="margin:6px 0 0; font-size:26px; font-weight:700; line-height:1.2; color:#121212;">${i18n.title}</h1>

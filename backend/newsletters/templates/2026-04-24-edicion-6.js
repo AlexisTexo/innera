@@ -1,7 +1,7 @@
 module.exports = {
   subject: {
-    en: 'The Inner Signal #6 — The inner era has begun',
-    es: 'The Inner Signal #6 — La era interior ha comenzado',
+    en: 'The Inner Signal — The inner era has begun',
+    es: 'The Inner Signal — La era interior ha comenzado',
   },
 
   html: (user) => {
@@ -67,9 +67,9 @@ module.exports = {
       section4Quote: '"¿Qué parte de tu vida actual está más alineada con quien realmente eres — y qué parte la estás viviendo para la audiencia?"',
       section5Title: 'EL RECURSO',
       section5Label: 'LECTURA RECOMENDADA',
-      section5Body: `<strong>Gen Z's desire to get offline is a boon for businesses</strong> — Forbes, marzo 2026`,
+      section5Body: `<strong>Why Offline Is The New Luxury</strong> — Forbes, marzo 2026`,
       section5Sub: 'El argumento cultural y económico del movimiento analógico — y la ventana estratégica que crea para herramientas de precisión interior como INNERA.',
-      section5Url: 'https://www.forbes.com',
+      section5Url: 'https://www.forbes.com/sites/kianbakhtiari/2026/03/29/why-offline-is-the-new-luxury/',
       section5Cta: 'Leer →',
       footerLine: 'Recibes esto porque eres parte de la fase de calibración controlada de INNERA.',
       unsubscribe: 'Si ya no deseas recibir The Inner Signal, responde a este correo.',
@@ -93,7 +93,7 @@ module.exports = {
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px; background-color:#ffffff;">
           <tr><td style="background-color:#000000; padding:20px 24px;" align="center"><img src="https://i.imgur.com/QJIoscZ.png" alt="The Inner Code" width="140" style="display:block; width:140px; max-width:100%; height:auto; border:0;" /></td></tr>
           <tr><td style="background-color:#000000; padding:0 24px 16px;" align="center"><p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:11px; letter-spacing:2px; color:#888888; text-transform:uppercase;">${i18n.headerLabel}</p></td></tr>
-          <tr><td style="padding:0;" align="center"><img src="https://i.imgur.com/xLv8O0q.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" /></td></tr>
+          <tr><td style="padding:0;" align="center"><img src="https://i.imgur.com/2OnLgtj.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" /></td></tr>
           <tr><td style="padding:28px 24px 0; font-family:Arial, Helvetica, sans-serif;">
             <p style="margin:0 0 4px; font-size:11px; letter-spacing:2px; color:#888888; text-transform:uppercase;">THE INNER SIGNAL · ${i18n.editionLabel}</p>
             <h1 style="margin:6px 0 0; font-size:26px; font-weight:700; line-height:1.2; color:#121212;">${i18n.title}</h1>

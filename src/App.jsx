@@ -34,6 +34,8 @@ const copy = {
       successTitle: "Registro confirmado",
       successBody:
         "Tu solicitud fue recibida. Si el correo no llega en unos minutos, revisa Spam/Promociones.",
+      confirmedTitle: "Correo confirmado",
+      confirmedBody: "Tu correo fue confirmado correctamente. ¡Gracias!",
       closedTitle: "Registro cerrado",
       closedBody: "Se alcanzó el límite de usuarios. Gracias por tu interés.",
       errorTitle: "No se pudo enviar",
@@ -184,6 +186,8 @@ const copy = {
       successTitle: "Registration confirmed",
       successBody:
         "We received your application. If the email doesn't arrive in a few minutes, check Spam/Promotions.",
+      confirmedTitle: "Email confirmed",
+      confirmedBody: "Your email has been confirmed. Thank you!",
       closedTitle: "Registration closed",
       closedBody: "We've reached the user limit. Thanks for your interest.",
       errorTitle: "Something went wrong",
@@ -574,8 +578,8 @@ useEffect(() => {
 
   if (params.get("confirmed") === "1") {
     setModal({
-      title: t.modal.successTitle,
-      body: "Tu correo fue confirmado correctamente. ¡Gracias!",
+      title: t.modal.confirmedTitle,
+      body: t.modal.confirmedBody,
       cta: t.modal.cta,
     });
     return;
@@ -613,17 +617,6 @@ useEffect(() => {
     };
   }, []);
 
-
-  useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("confirmed") === "1") {
-    setModal({
-      title: t.modal.successTitle,
-      body: "Tu correo fue confirmado. ¡Gracias!",
-      cta: t.modal.cta,
-    });
-  }
-}, [t.modal.cta, t.modal.successTitle]);
 
   useEffect(() => {
     const sections = Array.from(document.querySelectorAll(".section-reveal"));
