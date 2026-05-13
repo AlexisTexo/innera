@@ -2,6 +2,7 @@ var createError = require('http-errors');
 var express = require('express');
 const cors = require('cors');
 var path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
@@ -23,6 +24,8 @@ const allowedOrigins = [
   'http://127.0.0.1:8080',
   'https://theinnercode.net',
   'https://www.theinnercode.net',
+  'https://innera.theinnercode.net',
+  'https://apiinnercode.theinnercode.net',
   'http://66.175.236.238',
   'https://66.175.236.238',
   'https://104.219.41.220',
@@ -30,21 +33,46 @@ const allowedOrigins = [
 
 const domainRegex = /^https:\/\/([a-z0-9-]+\.)*theinnercode\.net$/i;
 
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  return allowedOrigins.includes(origin) || domainRegex.test(origin);
+}
+
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || domainRegex.test(origin)) return callback(null, true);
+    if (isAllowedOrigin(origin)) return callback(null, true);
     return callback(new Error('Not allowed by CORS: ' + origin));
   },
-  // 👉 IMPORTANTE: si NO usas cookies/sesión, ponlo en false
   credentials: false,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['Content-Disposition'],
+  optionsSuccessStatus: 204,
 };
 
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (isAllowedOrigin(origin)) {
+    if (origin) {
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Vary', 'Origin');
+    }
+
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Expose-Headers', 'Content-Disposition');
+  }
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // ✅ MISMA config
+app.options('*', cors(corsOptions));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

@@ -14,6 +14,7 @@ const verifyToken = require('../middlewares/verifyToken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const path = require('path');
+const fs = require('fs');
 
 /* =========================
    SMTP (IONOS u otro)
@@ -66,6 +67,83 @@ function makeConfirmToken() {
 function docIdFromEmail(email) {
   const norm = String(email || '').trim().toLowerCase();
   return crypto.createHash('sha256').update(norm).digest('hex');
+}
+
+function serializePendingUserDoc(doc, now = Date.now()) {
+  const data = doc.data() || {};
+  const createdAtMs = data.createdAt?.toMillis?.() ?? 0;
+  const expiresAtMs = data.expiresAt?.toMillis?.() ?? 0;
+
+  return {
+    id: doc.id,
+    email: String(data.email || '').trim(),
+    name: data.name || '',
+    lastName: data.lastName || '',
+    locale: data.locale || 'en',
+    depth: data.depth || 'curiosity',
+    stopReason: data.stopReason || '',
+    unclear: data.unclear || '',
+    status: data.status || 'pending',
+    createdAt: createdAtMs ? new Date(createdAtMs).toISOString() : null,
+    expiresAt: expiresAtMs ? new Date(expiresAtMs).toISOString() : null,
+    expired: expiresAtMs > 0 && now > expiresAtMs,
+  };
+}
+
+function sortByCreatedAtDesc(a, b) {
+  return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+}
+
+async function deleteSnapshotDocs(docs) {
+  let deleted = 0;
+
+  for (let i = 0; i < docs.length; i += 450) {
+    const chunk = docs.slice(i, i + 450);
+    const batch = db.batch();
+    chunk.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    deleted += chunk.length;
+  }
+
+  return deleted;
+}
+
+async function deletePendingIds(ids) {
+  const uniqueIds = [...new Set(
+    (Array.isArray(ids) ? ids : [])
+      .map(id => String(id || '').trim())
+      .filter(Boolean)
+  )];
+
+  let deleted = 0;
+  for (let i = 0; i < uniqueIds.length; i += 450) {
+    const chunk = uniqueIds.slice(i, i + 450);
+    const batch = db.batch();
+    chunk.forEach(id => batch.delete(db.collection('PendingTestUsers').doc(id)));
+    await batch.commit();
+    deleted += chunk.length;
+  }
+
+  return deleted;
+}
+
+async function deleteTestUserIds(ids) {
+  const uniqueIds = [...new Set(
+    (Array.isArray(ids) ? ids : [])
+      .map(id => String(id || '').trim())
+      .filter(Boolean)
+  )];
+
+  let deleted = 0;
+  for (let i = 0; i < uniqueIds.length; i += 450) {
+    const chunk = uniqueIds.slice(i, i + 450);
+    const batch = db.batch();
+    chunk.forEach(id => batch.delete(db.collection('TestUsers').doc(id)));
+    await batch.commit();
+    deleted += chunk.length;
+  }
+
+  return deleted;
 }
 
 
@@ -391,6 +469,7 @@ router.post('/test-users', async (req, res) => {
       referrer,
       tokenHash,
       expiresAt,
+      status: 'pending',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
 
@@ -512,6 +591,123 @@ router.get('/test-users/all', verifyToken, async (req, res) => {
   }
 });
 
+// POST /test-users/confirmed/delete-selected | Elimina usuarios confirmados seleccionados
+router.post('/test-users/confirmed/delete-selected', verifyToken, async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
+    if (ids.length === 0) {
+      return res.status(400).json({ message: 'No confirmed user IDs provided' });
+    }
+
+    const deleted = await deleteTestUserIds(ids);
+    return res.status(200).json({ deleted });
+  } catch (error) {
+    console.error('Error POST /test-users/confirmed/delete-selected:', error);
+    return res.status(500).json({ message: 'Error al eliminar usuarios confirmados seleccionados', error: error.message });
+  }
+});
+
+// DELETE /test-users/confirmed/:id | Elimina un usuario confirmado
+router.delete('/test-users/confirmed/:id', verifyToken, async (req, res) => {
+  try {
+    const id = String(req.params.id || '').trim();
+    if (!id) {
+      return res.status(400).json({ message: 'Missing confirmed user ID' });
+    }
+
+    await db.collection('TestUsers').doc(id).delete();
+    return res.status(200).json({ deleted: 1 });
+  } catch (error) {
+    console.error('Error DELETE /test-users/confirmed/:id:', error);
+    return res.status(500).json({ message: 'Error al eliminar usuario confirmado', error: error.message });
+  }
+});
+
+// GET /test-users/pending | Devuelve solicitudes pendientes antes de confirmacion
+router.get('/test-users/pending', verifyToken, async (_req, res) => {
+  try {
+    const now = Date.now();
+    const snapshot = await db.collection('PendingTestUsers').get();
+    const users = snapshot.docs
+      .map(doc => serializePendingUserDoc(doc, now))
+      .sort(sortByCreatedAtDesc);
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const pendingToday = users.filter(u => String(u.createdAt || '').slice(0, 10) === todayStr).length;
+    const expiredPending = users.filter(u => u.expired).length;
+
+    return res.status(200).json({
+      count: users.length,
+      pendingToday,
+      expiredPending,
+      users
+    });
+  } catch (error) {
+    console.error('Error GET /test-users/pending:', error);
+    return res.status(500).json({ message: 'Error al obtener pendientes', error: error.message });
+  }
+});
+
+// DELETE /test-users/pending/expired | Elimina solicitudes pendientes vencidas
+router.delete('/test-users/pending/expired', verifyToken, async (_req, res) => {
+  try {
+    const now = admin.firestore.Timestamp.now();
+    const snapshot = await db.collection('PendingTestUsers')
+      .where('expiresAt', '<', now)
+      .get();
+
+    const deleted = await deleteSnapshotDocs(snapshot.docs);
+    return res.status(200).json({ deleted });
+  } catch (error) {
+    console.error('Error DELETE /test-users/pending/expired:', error);
+    return res.status(500).json({ message: 'Error al eliminar pendientes expirados', error: error.message });
+  }
+});
+
+// POST /test-users/pending/delete-selected | Elimina pendientes seleccionados por ID
+router.post('/test-users/pending/delete-selected', verifyToken, async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
+    if (ids.length === 0) {
+      return res.status(400).json({ message: 'No pending user IDs provided' });
+    }
+
+    const deleted = await deletePendingIds(ids);
+    return res.status(200).json({ deleted });
+  } catch (error) {
+    console.error('Error POST /test-users/pending/delete-selected:', error);
+    return res.status(500).json({ message: 'Error al eliminar pendientes seleccionados', error: error.message });
+  }
+});
+
+// DELETE /test-users/pending/:id | Elimina una solicitud pendiente
+router.delete('/test-users/pending/:id', verifyToken, async (req, res) => {
+  try {
+    const id = String(req.params.id || '').trim();
+    if (!id) {
+      return res.status(400).json({ message: 'Missing pending user ID' });
+    }
+
+    await db.collection('PendingTestUsers').doc(id).delete();
+    return res.status(200).json({ deleted: 1 });
+  } catch (error) {
+    console.error('Error DELETE /test-users/pending/:id:', error);
+    return res.status(500).json({ message: 'Error al eliminar pendiente', error: error.message });
+  }
+});
+
+// DELETE /test-users/pending | Elimina todas las solicitudes pendientes
+router.delete('/test-users/pending', verifyToken, async (_req, res) => {
+  try {
+    const snapshot = await db.collection('PendingTestUsers').get();
+    const deleted = await deleteSnapshotDocs(snapshot.docs);
+    return res.status(200).json({ deleted });
+  } catch (error) {
+    console.error('Error DELETE /test-users/pending:', error);
+    return res.status(500).json({ message: 'Error al eliminar pendientes', error: error.message });
+  }
+});
+
 /* =========================
    Rate limiter por IP (en memoria)
    ========================= */
@@ -618,6 +814,7 @@ router.post('/test-users/analytics-login', async (req, res) => {
 // GET /test-users/analytics — resumen agregado (protegido con JWT)
 router.get('/test-users/analytics', verifyToken, async (_req, res) => {
   try {
+    const showUsers = String(process.env.ANALYTICS_SHOW_USERS || '').toUpperCase() === 'TRUE';
     const [confirmedSnap, pendingSnap] = await Promise.all([
       db.collection('TestUsers').get(),
       db.collection('PendingTestUsers').get(),
@@ -728,7 +925,12 @@ router.get('/test-users/analytics', verifyToken, async (_req, res) => {
         date: new Date(u.dateCreation.toMillis()).toISOString(),
       }));
 
+    const pendingUsers = pendingSnap.docs
+      .map(d => serializePendingUserDoc(d, now))
+      .sort(sortByCreatedAtDesc);
+
     return res.status(200).json({
+      showUsers,
       totalConfirmed,
       totalPending,
       expiredPending,
@@ -743,6 +945,7 @@ router.get('/test-users/analytics', verifyToken, async (_req, res) => {
       topReferrers,
       recentUsers,
       registrationsPerDay,
+      pendingUsers,
     });
   } catch (error) {
     console.error('Error GET /test-users/analytics:', error);
@@ -830,6 +1033,8 @@ router.get('/test-users/confirm', async (req, res) => {
     // Guardar ya confirmado en TestUsers
     await confirmedRef.set({
       email,
+      name: pending.name || '',
+      lastName: pending.lastName || '',
       depth: pending.depth || 'curiosity',
       stopReason: pending.stopReason || '',
       unclear: pending.unclear || '',
@@ -861,7 +1066,7 @@ router.get('/test-users/confirm', async (req, res) => {
 // GET /test-users/newsletter-log — historial de envíos (protegido con JWT)
 router.get('/test-users/newsletter-log', verifyToken, (_req, res) => {
   try {
-    const logPath = path.join(__dirname, '../../newsletters/sent-log.json');
+    const logPath = path.resolve(__dirname, '../newsletters/sent-log.json');
     if (!fs.existsSync(logPath)) return res.status(200).json({ campaigns: [] });
 
     const raw = JSON.parse(fs.readFileSync(logPath, 'utf8'));

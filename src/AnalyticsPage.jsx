@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { Fragment, useState, useEffect, useCallback } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -121,20 +121,28 @@ function UsersTable({ token, onLogout }) {
   const [sortCol, setSortCol] = useState("dateCreation");
   const [sortAsc, setSortAsc] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
+  const [deletingAction, setDeletingAction] = useState("");
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`${API_URL}/testusers/test-users/all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.status === 401 || res.status === 403) { onLogout(); return; }
-        const json = await res.json();
-        setUsers(json.users || []);
-      } catch { /* noop */ }
-      setLoading(false);
-    })();
+  const loadUsers = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/testusers/test-users/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 401 || res.status === 403) { onLogout(); return; }
+      const json = await res.json();
+      const nextUsers = json.users || [];
+      setUsers(nextUsers);
+      setSelectedIds((prev) => {
+        const validIds = new Set(nextUsers.map((u) => u.id).filter(Boolean));
+        return new Set([...prev].filter((id) => validIds.has(id)));
+      });
+    } catch { /* noop */ }
+    setLoading(false);
   }, [token, onLogout]);
+
+  useEffect(() => { loadUsers(); }, [loadUsers]);
 
   const handleSort = (col) => {
     if (sortCol === col) setSortAsc(!sortAsc);
@@ -180,11 +188,105 @@ function UsersTable({ token, onLogout }) {
     return "Other";
   };
 
+  const selectedCount = selectedIds.size;
+  const allSelected = filtered.length > 0 && filtered.every((u) => selectedIds.has(u.id));
+
+  const toggleSelection = useCallback((id, index, checked, shiftKey) => {
+    if (!id) return;
+
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+
+      if (shiftKey && lastSelectedIndex !== null && filtered.length > 0) {
+        const start = Math.min(lastSelectedIndex, index);
+        const end = Math.max(lastSelectedIndex, index);
+
+        for (let i = start; i <= end; i++) {
+          const rangeId = filtered[i]?.id;
+          if (!rangeId) continue;
+          if (checked) next.add(rangeId);
+          else next.delete(rangeId);
+        }
+      } else if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+
+      return next;
+    });
+
+    setLastSelectedIndex(index);
+  }, [filtered, lastSelectedIndex]);
+
+  const toggleAllSelection = useCallback((checked) => {
+    setSelectedIds(checked ? new Set(filtered.map((u) => u.id).filter(Boolean)) : new Set());
+    setLastSelectedIndex(null);
+  }, [filtered]);
+
+  const deleteUsers = useCallback(async (mode, user = null) => {
+    const deleteOne = mode === "one";
+    const ids = deleteOne ? [user?.id].filter(Boolean) : [...selectedIds];
+    if (ids.length === 0) return;
+
+    const confirmed = window.confirm(
+      deleteOne
+        ? `Delete confirmed user ${user.email || user.id}?`
+        : `Delete ${ids.length} selected confirmed users?`
+    );
+    if (!confirmed) return;
+
+    setDeletingAction(mode);
+    try {
+      let endpoint = `${API_URL}/testusers/test-users/confirmed/delete-selected`;
+      let options = {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ids }),
+      };
+
+      if (deleteOne) {
+        endpoint = `${API_URL}/testusers/test-users/confirmed/${encodeURIComponent(user.id)}`;
+        options = {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        };
+      }
+
+      const res = await fetch(endpoint, options);
+      if (res.status === 401 || res.status === 403) { onLogout(); return; }
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.message || "Error deleting users");
+
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        ids.forEach((id) => next.delete(id));
+        return next;
+      });
+      if (deleteOne && expandedId === user.id) setExpandedId(null);
+      await loadUsers();
+    } catch (err) {
+      window.alert(err.message || "Error deleting users");
+    } finally {
+      setDeletingAction("");
+    }
+  }, [expandedId, loadUsers, onLogout, selectedIds, token]);
+
   if (loading) return <p style={{ color: "#888", textAlign: "center", padding: 40 }}>Loading users...</p>;
 
   return (
     <div style={{ ...styles.section, marginTop: 16 }}>
-      <h3 style={styles.sectionTitle}>All users ({filtered.length})</h3>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
+        <h3 style={{ ...styles.sectionTitle, margin: 0 }}>All users ({filtered.length})</h3>
+        <button
+          type="button"
+          onClick={() => deleteUsers("selected")}
+          disabled={deletingAction !== "" || selectedCount === 0}
+          style={{ ...styles.btnSmall, opacity: deletingAction !== "" || selectedCount === 0 ? 0.45 : 1 }}
+        >
+          {deletingAction === "selected" ? "Deleting..." : `Delete selected (${selectedCount})`}
+        </button>
+      </div>
 
       {/* Filters */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
@@ -222,24 +324,39 @@ function UsersTable({ token, onLogout }) {
 
       {/* Table */}
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 700 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 860 }}>
           <thead>
             <tr style={{ borderBottom: "1px solid #333" }}>
+              <th style={{ ...styles.th, width: 34 }}>
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={(e) => toggleAllSelection(e.target.checked)}
+                />
+              </th>
               <th style={styles.thClick} onClick={() => handleSort("email")}>Email{sortIcon("email")}</th>
               <th style={styles.thClick} onClick={() => handleSort("locale")}>Lang{sortIcon("locale")}</th>
               <th style={styles.thClick} onClick={() => handleSort("depth")}>Depth{sortIcon("depth")}</th>
               <th style={styles.th}>Device</th>
               <th style={styles.thClick} onClick={() => handleSort("dateCreation")}>Registered{sortIcon("dateCreation")}</th>
               <th style={styles.th}></th>
+              <th style={styles.th}>Action</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={6} style={{ ...styles.td, textAlign: "center", color: "#555", padding: 24 }}>No users match filters</td></tr>
+              <tr><td colSpan={8} style={{ ...styles.td, textAlign: "center", color: "#555", padding: 24 }}>No users match filters</td></tr>
             )}
-            {filtered.map((u) => (
-              <>
+            {filtered.map((u, index) => (
+              <Fragment key={u.id}>
                 <tr key={u.id} style={{ borderBottom: "1px solid #1a1a1a", cursor: "pointer" }} onClick={() => setExpandedId(expandedId === u.id ? null : u.id)}>
+                  <td style={{ ...styles.td, width: 34 }} onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(u.id)}
+                      onChange={(e) => toggleSelection(u.id, index, e.target.checked, e.nativeEvent.shiftKey)}
+                    />
+                  </td>
                   <td style={styles.td}>{u.email}</td>
                   <td style={{ ...styles.td, textAlign: "center" }}>
                     <span style={{ padding: "2px 6px", borderRadius: 4, fontSize: 11, background: u.locale === "en" ? "#1e3a5f" : "#5f3a1e", color: "#fff" }}>
@@ -257,10 +374,27 @@ function UsersTable({ token, onLogout }) {
                   <td style={{ ...styles.td, color: "#888" }}>{parseDevice(u.userAgent)}</td>
                   <td style={{ ...styles.td, color: "#888" }}>{u.dateCreation ? new Date(u.dateCreation).toLocaleDateString() : "—"}</td>
                   <td style={{ ...styles.td, color: "#555", fontSize: 11 }}>{expandedId === u.id ? "▲" : "▼"}</td>
+                  <td style={styles.td} onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => deleteUsers("one", u)}
+                      disabled={deletingAction !== ""}
+                      style={{
+                        ...styles.btnSmall,
+                        padding: "5px 10px",
+                        background: "#3b1212",
+                        color: "#fca5a5",
+                        fontSize: 11,
+                        opacity: deletingAction !== "" ? 0.45 : 1,
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
                 {expandedId === u.id && (
                   <tr key={`${u.id}-detail`} style={{ background: "#0a0a0a" }}>
-                    <td colSpan={6} style={{ padding: "12px 16px" }}>
+                    <td colSpan={8} style={{ padding: "12px 16px" }}>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, fontSize: 13 }}>
                         <div>
                           <span style={styles.detailLabel}>Full name</span>
@@ -298,7 +432,7 @@ function UsersTable({ token, onLogout }) {
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
@@ -374,12 +508,176 @@ function NewsletterLog({ token, onLogout }) {
   );
 }
 
+/* ───────── Pending Users ───────── */
+function PendingUsersList({
+  users,
+  expiredCount = 0,
+  deletingAction = "",
+  selectedIds = new Set(),
+  onToggleSelect,
+  onToggleSelectAll,
+  onDeleteSelected,
+  onDeleteExpired,
+  onDeleteAll,
+  onDeleteOne,
+}) {
+  const formatDate = (value) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+    return date.toLocaleString();
+  };
+  const selectedCount = selectedIds.size;
+  const allSelected = users.length > 0 && users.every((u) => selectedIds.has(u.id));
+
+  return (
+    <div style={{ ...styles.section, marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
+        <div>
+          <h3 style={{ ...styles.sectionTitle, margin: 0 }}>Pending users ({users.length})</h3>
+          <span style={{ fontSize: 11, color: "#666" }}>Awaiting email confirmation</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={onDeleteSelected}
+            disabled={deletingAction !== "" || selectedCount === 0}
+            style={{ ...styles.btnSmall, opacity: deletingAction !== "" || selectedCount === 0 ? 0.45 : 1 }}
+          >
+            {deletingAction === "selected" ? "Deleting..." : `Delete selected (${selectedCount})`}
+          </button>
+          <button
+            type="button"
+            onClick={onDeleteExpired}
+            disabled={deletingAction !== "" || expiredCount === 0}
+            style={{ ...styles.btnSmall, opacity: deletingAction !== "" || expiredCount === 0 ? 0.45 : 1 }}
+          >
+            {deletingAction === "expired" ? "Deleting..." : `Delete expired (${expiredCount})`}
+          </button>
+          <button
+            type="button"
+            onClick={onDeleteAll}
+            disabled={deletingAction !== "" || users.length === 0}
+            style={{
+              ...styles.btnSmall,
+              background: "#3b1212",
+              color: "#fca5a5",
+              opacity: deletingAction !== "" || users.length === 0 ? 0.45 : 1,
+            }}
+          >
+            {deletingAction === "all" ? "Deleting..." : "Delete all"}
+          </button>
+        </div>
+      </div>
+
+      {users.length === 0 ? (
+        <p style={{ color: "#555", fontSize: 13, margin: 0 }}>No pending users.</p>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 900 }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid #333" }}>
+                <th style={{ ...styles.th, width: 34 }}>
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={(e) => onToggleSelectAll?.(e.target.checked)}
+                  />
+                </th>
+                <th style={styles.th}>Email</th>
+                <th style={styles.th}>Depth</th>
+                <th style={styles.th}>Lang</th>
+                <th style={styles.th}>Notes</th>
+                <th style={styles.th}>Submitted</th>
+                <th style={styles.th}>Status</th>
+                <th style={styles.th}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u, index) => (
+                  <tr key={u.id || u.email} style={{ borderBottom: "1px solid #1a1a1a" }}>
+                    <td style={{ ...styles.td, width: 34 }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(u.id)}
+                        onChange={(e) => onToggleSelect?.(u.id, index, e.target.checked, e.nativeEvent.shiftKey)}
+                      />
+                    </td>
+                    <td style={styles.td}>
+                      {u.email ? (
+                        <a href={`mailto:${u.email}`} style={{ color: "#93c5fd", textDecoration: "none" }}>{u.email}</a>
+                      ) : "—"}
+                    </td>
+                    <td style={styles.td}>{u.depth || "—"}</td>
+                    <td style={{ ...styles.td, textAlign: "center" }}>
+                      <span style={{ padding: "2px 6px", borderRadius: 4, fontSize: 11, background: u.locale === "en" ? "#1e3a5f" : "#5f3a1e", color: "#fff" }}>
+                        {(u.locale || "en").toUpperCase()}
+                      </span>
+                    </td>
+                    <td style={{ ...styles.td, color: "#888", maxWidth: 280 }}>
+                      <div style={{ whiteSpace: "normal" }}>
+                        {u.stopReason && <div><span style={{ color: "#666" }}>Stop:</span> {u.stopReason}</div>}
+                        {u.unclear && <div><span style={{ color: "#666" }}>Unclear:</span> {u.unclear}</div>}
+                        {!u.stopReason && !u.unclear ? "—" : null}
+                      </div>
+                    </td>
+                    <td style={{ ...styles.td, color: "#888" }}>{formatDate(u.createdAt)}</td>
+                    <td style={styles.td}>
+                      <span style={{
+                        padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 700,
+                        background: u.expired ? "#3b1212" : "#3b2a12",
+                        color: u.expired ? "#fca5a5" : "#fbbf24",
+                      }}>
+                        {u.expired ? "Expired" : "Pending"}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      <button
+                        type="button"
+                        onClick={() => onDeleteOne?.(u)}
+                        disabled={deletingAction !== ""}
+                        style={{
+                          ...styles.btnSmall,
+                          padding: "5px 10px",
+                          background: "#3b1212",
+                          color: "#fca5a5",
+                          fontSize: 11,
+                          opacity: deletingAction !== "" ? 0.45 : 1,
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PendingUsersUnavailable({ count }) {
+  return (
+    <div style={{ ...styles.section, marginBottom: 16 }}>
+      <h3 style={styles.sectionTitle}>Pending users ({count})</h3>
+      <p style={{ margin: 0, color: "#888", fontSize: 13 }}>
+        There are pending records, but the pending-users API did not return detail rows. Redeploy/restart the API and refresh Analytics.
+      </p>
+    </div>
+  );
+}
+
 /* ───────── Dashboard ───────── */
 function Dashboard({ token, onLogout, showUsers }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const [tab, setTab] = useState("overview");
+  const [deletingPending, setDeletingPending] = useState("");
+  const [selectedPendingIds, setSelectedPendingIds] = useState(() => new Set());
+  const [lastSelectedPendingIndex, setLastSelectedPendingIndex] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -389,7 +687,30 @@ function Dashboard({ token, onLogout, showUsers }) {
       if (res.status === 401 || res.status === 403) { onLogout(); return; }
       const json = await res.json();
       if (!res.ok) { setError(json.message || "Error loading analytics"); return; }
-      setData(json);
+
+      let nextData = json;
+      try {
+        const pendingRes = await fetch(`${API_URL}/testusers/test-users/pending`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (pendingRes.status === 401 || pendingRes.status === 403) { onLogout(); return; }
+        if (pendingRes.ok) {
+          const pendingJson = await pendingRes.json();
+          nextData = {
+            ...nextData,
+            totalPending: pendingJson.count ?? nextData.totalPending,
+            pendingToday: pendingJson.pendingToday ?? nextData.pendingToday,
+            expiredPending: pendingJson.expiredPending ?? nextData.expiredPending,
+            pendingUsers: pendingJson.users || [],
+          };
+        }
+      } catch { /* keep analytics payload */ }
+
+      setData(nextData);
+      setSelectedPendingIds((prev) => {
+        const validIds = new Set((nextData.pendingUsers || []).map((u) => u.id).filter(Boolean));
+        return new Set([...prev].filter((id) => validIds.has(id)));
+      });
       setLastUpdated(new Date());
       setError("");
     } catch {
@@ -403,6 +724,105 @@ function Dashboard({ token, onLogout, showUsers }) {
     const interval = setInterval(load, 2 * 60 * 1000);
     return () => clearInterval(interval);
   }, [load]);
+
+  const togglePendingSelection = useCallback((id, index, checked, shiftKey) => {
+    if (!id) return;
+    const pendingUsers = Array.isArray(data?.pendingUsers) ? data.pendingUsers : [];
+
+    setSelectedPendingIds((prev) => {
+      const next = new Set(prev);
+
+      if (shiftKey && lastSelectedPendingIndex !== null && pendingUsers.length > 0) {
+        const start = Math.min(lastSelectedPendingIndex, index);
+        const end = Math.max(lastSelectedPendingIndex, index);
+
+        for (let i = start; i <= end; i++) {
+          const rangeId = pendingUsers[i]?.id;
+          if (!rangeId) continue;
+          if (checked) next.add(rangeId);
+          else next.delete(rangeId);
+        }
+      } else if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+
+      return next;
+    });
+
+    setLastSelectedPendingIndex(index);
+  }, [data, lastSelectedPendingIndex]);
+
+  const toggleAllPendingSelection = useCallback((checked) => {
+    const pendingUsers = Array.isArray(data?.pendingUsers) ? data.pendingUsers : [];
+    setSelectedPendingIds(checked ? new Set(pendingUsers.map((u) => u.id).filter(Boolean)) : new Set());
+    setLastSelectedPendingIndex(null);
+  }, [data]);
+
+  const deletePendingUsers = useCallback(async (mode, user = null) => {
+    const pendingUsers = Array.isArray(data?.pendingUsers) ? data.pendingUsers : [];
+    const expiredCount = data?.expiredPending ?? pendingUsers.filter((u) => u.expired).length;
+    const selectedIds = [...selectedPendingIds];
+    const deleteAll = mode === "all";
+    const deleteSelected = mode === "selected";
+    const deleteOne = mode === "one";
+    const count = deleteAll ? pendingUsers.length : deleteSelected ? selectedIds.length : deleteOne ? 1 : expiredCount;
+
+    if (count === 0 || (deleteOne && !user?.id)) return;
+
+    const confirmed = window.confirm(
+      deleteOne
+        ? `Delete pending user ${user.email || user.id}? Their confirmation link will stop working.`
+        : deleteSelected
+          ? `Delete ${count} selected pending users? Their confirmation links will stop working.`
+          : deleteAll
+        ? `Delete all ${count} pending users? Their confirmation links will stop working.`
+        : `Delete ${count} expired pending users? Their confirmation links will stop working.`
+    );
+    if (!confirmed) return;
+
+    setDeletingPending(mode);
+    try {
+      let endpoint = `${API_URL}/testusers/test-users/pending/expired`;
+      let options = {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      };
+
+      if (deleteAll) {
+        endpoint = `${API_URL}/testusers/test-users/pending`;
+      } else if (deleteSelected) {
+        endpoint = `${API_URL}/testusers/test-users/pending/delete-selected`;
+        options = {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ ids: selectedIds }),
+        };
+      } else if (deleteOne) {
+        endpoint = `${API_URL}/testusers/test-users/pending/${encodeURIComponent(user.id)}`;
+      }
+
+      const res = await fetch(endpoint, options);
+      if (res.status === 401 || res.status === 403) { onLogout(); return; }
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(json.message || "Error deleting pending users");
+        return;
+      }
+      if (deleteAll || deleteSelected) setSelectedPendingIds(new Set());
+      if (deleteOne) setSelectedPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(user.id);
+        return next;
+      });
+      await load();
+    } catch {
+      setError("Connection error");
+    } finally {
+      setDeletingPending("");
+    }
+  }, [data, load, onLogout, selectedPendingIds, token]);
 
   if (error) {
     return (
@@ -422,6 +842,10 @@ function Dashboard({ token, onLogout, showUsers }) {
   const maxRef = data.topReferrers?.length ? data.topReferrers[0].count : 1;
   const depthColors = { curiosity: "#60a5fa", commitment: "#f59e0b", transformation: "#10b981" };
   const spotsPercent = ((300 - data.spotsRemaining) / 300 * 100).toFixed(0);
+  const hasPendingUsersField = Object.prototype.hasOwnProperty.call(data, "pendingUsers");
+  const pendingUsers = Array.isArray(data.pendingUsers) ? data.pendingUsers : [];
+  const pendingExpiredCount = data.expiredPending ?? pendingUsers.filter((u) => u.expired).length;
+  const effectiveShowUsers = data.showUsers ?? showUsers;
 
   return (
     <div style={styles.dashWrapper}>
@@ -440,7 +864,7 @@ function Dashboard({ token, onLogout, showUsers }) {
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
-        {(showUsers ? ["overview", "users", "newsletter"] : ["overview", "newsletter"]).map((t) => (
+        {(effectiveShowUsers ? ["overview", "users", "newsletter"] : ["overview", "newsletter"]).map((t) => (
           <button key={t} onClick={() => setTab(t)} style={{
             ...styles.btnSmall,
             background: tab === t ? "#fff" : "#222",
@@ -466,6 +890,38 @@ function Dashboard({ token, onLogout, showUsers }) {
             <StatCard label="Today confirmed" value={data.registeredToday || 0} highlight="#60a5fa" />
             <StatCard label="Today pending" value={data.pendingToday || 0} highlight="#a78bfa" />
           </div>
+
+          {pendingUsers.length > 0 && (
+            <PendingUsersList
+              users={pendingUsers}
+              expiredCount={pendingExpiredCount}
+              deletingAction={deletingPending}
+              selectedIds={selectedPendingIds}
+              onToggleSelect={togglePendingSelection}
+              onToggleSelectAll={toggleAllPendingSelection}
+              onDeleteSelected={() => deletePendingUsers("selected")}
+              onDeleteExpired={() => deletePendingUsers("expired")}
+              onDeleteAll={() => deletePendingUsers("all")}
+              onDeleteOne={(user) => deletePendingUsers("one", user)}
+            />
+          )}
+          {pendingUsers.length === 0 && data.totalPending > 0 && (
+            <PendingUsersUnavailable count={data.totalPending} />
+          )}
+          {pendingUsers.length === 0 && data.totalPending === 0 && hasPendingUsersField && (
+            <PendingUsersList
+              users={[]}
+              expiredCount={0}
+              deletingAction={deletingPending}
+              selectedIds={selectedPendingIds}
+              onToggleSelect={togglePendingSelection}
+              onToggleSelectAll={toggleAllPendingSelection}
+              onDeleteSelected={() => deletePendingUsers("selected")}
+              onDeleteExpired={() => deletePendingUsers("expired")}
+              onDeleteAll={() => deletePendingUsers("all")}
+              onDeleteOne={(user) => deletePendingUsers("one", user)}
+            />
+          )}
 
           {/* Spots progress bar */}
           <div style={{ ...styles.section, marginBottom: 16 }}>
@@ -532,7 +988,7 @@ function Dashboard({ token, onLogout, showUsers }) {
         </>
       )}
 
-      {tab === "users" && showUsers && (
+      {tab === "users" && effectiveShowUsers && (
         <UsersTable token={token} onLogout={onLogout} />
       )}
 

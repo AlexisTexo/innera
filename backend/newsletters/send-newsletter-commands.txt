@@ -1,0 +1,419 @@
+INNERA newsletters - comandos manuales y programados
+
+Ruta real en servidor:
+C:\inetpub\wwwroot\Repos\MonoInnera\apps\api\newsletters
+
+Campanas actualizadas:
+- 2026-04-14-edicion-1
+- 2026-04-16-edicion-2
+- 2026-04-21-edicion-3
+- 2026-04-23-edicion-4
+- 2026-04-28-edicion-5
+- 2026-04-30-edicion-6
+- 2026-05-05-edicion-7
+- 2026-05-07-edicion-8
+- 2026-05-12-edicion-9
+- 2026-05-14-edicion-10
+- 2026-05-19-edicion-11
+- 2026-05-21-edicion-12
+- 2026-05-26-edicion-13
+- 2026-05-28-edicion-14
+- 2026-06-02-edicion-15
+- 2026-06-04-edicion-16
+
+---------
+ENVIAR SOLO UNO
+
+Desde C:\inetpub\wwwroot\Repos\MonoInnera\apps\api:
+node scripts\send-newsletter.js 2026-04-14-edicion-1
+
+Desde C:\inetpub\wwwroot\Repos\MonoInnera\apps\api\newsletters:
+node ..\scripts\send-newsletter.js 2026-04-14-edicion-1
+
+---------
+ENVIAR PRUEBA A ALEXIS
+
+Desde C:\inetpub\wwwroot\Repos\MonoInnera\apps\api:
+node scripts\send-newsletter.js 2026-06-04-edicion-16 --test-to alexistexo@hotmail.com --locale es
+
+Desde C:\inetpub\wwwroot\Repos\MonoInnera\apps\api\newsletters:
+node ..\scripts\send-newsletter.js 2026-06-04-edicion-16 --test-to alexistexo@hotmail.com --locale es
+
+---------
+ENVIAR UNA SEMANA
+
+Semana 1:
+node ..\scripts\send-newsletter.js 2026-04-14-edicion-1
+node ..\scripts\send-newsletter.js 2026-04-16-edicion-2
+
+Semana 2:
+node ..\scripts\send-newsletter.js 2026-04-21-edicion-3
+node ..\scripts\send-newsletter.js 2026-04-23-edicion-4
+
+Semana 3:
+node ..\scripts\send-newsletter.js 2026-04-28-edicion-5
+node ..\scripts\send-newsletter.js 2026-04-30-edicion-6
+
+Semana 4:
+node ..\scripts\send-newsletter.js 2026-05-05-edicion-7
+node ..\scripts\send-newsletter.js 2026-05-07-edicion-8
+
+Semana 5:
+node ..\scripts\send-newsletter.js 2026-05-12-edicion-9
+node ..\scripts\send-newsletter.js 2026-05-14-edicion-10
+
+Semana 6:
+node ..\scripts\send-newsletter.js 2026-05-19-edicion-11
+node ..\scripts\send-newsletter.js 2026-05-21-edicion-12
+
+Semana 7:
+node ..\scripts\send-newsletter.js 2026-05-26-edicion-13
+node ..\scripts\send-newsletter.js 2026-05-28-edicion-14
+
+Semana 8:
+node ..\scripts\send-newsletter.js 2026-06-02-edicion-15
+node ..\scripts\send-newsletter.js 2026-06-04-edicion-16
+
+---------
+ENVIAR UNO POR UNO
+
+node ..\scripts\send-newsletter.js 2026-04-14-edicion-1
+node ..\scripts\send-newsletter.js 2026-04-16-edicion-2
+node ..\scripts\send-newsletter.js 2026-04-21-edicion-3
+node ..\scripts\send-newsletter.js 2026-04-23-edicion-4
+node ..\scripts\send-newsletter.js 2026-04-28-edicion-5
+node ..\scripts\send-newsletter.js 2026-04-30-edicion-6
+node ..\scripts\send-newsletter.js 2026-05-05-edicion-7
+node ..\scripts\send-newsletter.js 2026-05-07-edicion-8
+node ..\scripts\send-newsletter.js 2026-05-12-edicion-9
+node ..\scripts\send-newsletter.js 2026-05-14-edicion-10
+node ..\scripts\send-newsletter.js 2026-05-19-edicion-11
+node ..\scripts\send-newsletter.js 2026-05-21-edicion-12
+node ..\scripts\send-newsletter.js 2026-05-26-edicion-13
+node ..\scripts\send-newsletter.js 2026-05-28-edicion-14
+node ..\scripts\send-newsletter.js 2026-06-02-edicion-15
+node ..\scripts\send-newsletter.js 2026-06-04-edicion-16
+
+---------
+PROGRAMAR LA SEMANA
+
+PowerShell
+
+$nodePath = "C:\Program Files\nodejs\node.exe"
+$workDir = "C:\inetpub\wwwroot\Repos\MonoInnera\apps\api\newsletters"
+
+Semana 1:
+$campaigns = @(
+  @{ name = "2026-04-14-edicion-1"; date = "04/14/2026 14:00" },
+  @{ name = "2026-04-16-edicion-2"; date = "04/16/2026 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger -Once -At $c.date
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+Semana 2:
+$campaigns = @(
+  @{ name = "2026-04-21-edicion-3"; date = "04/21/2026 14:00" },
+  @{ name = "2026-04-23-edicion-4"; date = "04/23/2026 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger -Once -At $c.date
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+Semana 3:
+$campaigns = @(
+  @{ name = "2026-04-28-edicion-5"; date = "04/28/2026 14:00" },
+  @{ name = "2026-04-30-edicion-6"; date = "04/30/2026 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger -Once -At $c.date
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+Semana 4:
+$campaigns = @(
+  @{ name = "2026-05-05-edicion-7"; date = "05/05/2026 14:00" },
+  @{ name = "2026-05-07-edicion-8"; date = "05/07/2026 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger -Once -At $c.date
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+Semana 5:
+$campaigns = @(
+  @{ name = "2026-05-12-edicion-9"; date = "05/12/2026 14:00" },
+  @{ name = "2026-05-14-edicion-10"; date = "05/14/2026 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger -Once -At $c.date
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+Semana 6:
+$campaigns = @(
+  @{ name = "2026-05-19-edicion-11"; date = "05/19/2026 14:00" },
+  @{ name = "2026-05-21-edicion-12"; date = "05/21/2026 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger -Once -At $c.date
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+Semana 7:
+$campaigns = @(
+  @{ name = "2026-05-26-edicion-13"; date = "05/26/2026 14:00" },
+  @{ name = "2026-05-28-edicion-14"; date = "05/28/2026 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger -Once -At $c.date
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+Semana 8:
+$campaigns = @(
+  @{ name = "2026-06-02-edicion-15"; date = "06/02/2026 14:00" },
+  @{ name = "2026-06-04-edicion-16"; date = "06/04/2026 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger -Once -At $c.date
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+---------
+PROGRAMAR EDICIONES 13 A 16
+
+PowerShell
+
+$nodePath = "C:\Program Files\nodejs\node.exe"
+$workDir = "C:\inetpub\wwwroot\Repos\MonoInnera\apps\api\newsletters"
+
+$campaigns = @(
+  @{ name = "2026-05-26-edicion-13"; date = "2026-05-26 14:00" },
+  @{ name = "2026-05-28-edicion-14"; date = "2026-05-28 14:00" },
+  @{ name = "2026-06-02-edicion-15"; date = "2026-06-02 14:00" },
+  @{ name = "2026-06-04-edicion-16"; date = "2026-06-04 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger `
+    -Once `
+    -At ([datetime]::ParseExact($c.date, "yyyy-MM-dd HH:mm", $null))
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+---------
+PROGRAMAR TODAS DE GOLPE
+
+PowerShell
+
+$nodePath = "C:\Program Files\nodejs\node.exe"
+$workDir = "C:\inetpub\wwwroot\Repos\MonoInnera\apps\api\newsletters"
+
+$campaigns = @(
+  @{ name = "2026-04-14-edicion-1"; date = "04/14/2026 14:00" },
+  @{ name = "2026-04-16-edicion-2"; date = "04/16/2026 14:00" },
+  @{ name = "2026-04-21-edicion-3"; date = "04/21/2026 14:00" },
+  @{ name = "2026-04-23-edicion-4"; date = "04/23/2026 14:00" },
+  @{ name = "2026-04-28-edicion-5"; date = "04/28/2026 14:00" },
+  @{ name = "2026-04-30-edicion-6"; date = "04/30/2026 14:00" },
+  @{ name = "2026-05-05-edicion-7"; date = "05/05/2026 14:00" },
+  @{ name = "2026-05-07-edicion-8"; date = "05/07/2026 14:00" },
+  @{ name = "2026-05-12-edicion-9"; date = "05/12/2026 14:00" },
+  @{ name = "2026-05-14-edicion-10"; date = "05/14/2026 14:00" },
+  @{ name = "2026-05-19-edicion-11"; date = "05/19/2026 14:00" },
+  @{ name = "2026-05-21-edicion-12"; date = "05/21/2026 14:00" },
+  @{ name = "2026-05-26-edicion-13"; date = "05/26/2026 14:00" },
+  @{ name = "2026-05-28-edicion-14"; date = "05/28/2026 14:00" },
+  @{ name = "2026-06-02-edicion-15"; date = "06/02/2026 14:00" },
+  @{ name = "2026-06-04-edicion-16"; date = "06/04/2026 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger -Once -At $c.date
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+---------
+BORRAR Y REPROGRAMAR EDICION 8 EN ADELANTE
+
+PowerShell
+
+$nodePath = "C:\Program Files\nodejs\node.exe"
+$workDir = "C:\inetpub\wwwroot\Repos\MonoInnera\apps\api\newsletters"
+
+Get-ScheduledTask |
+  Where-Object { $_.TaskName -like "INNERA-2026*" } |
+  Unregister-ScheduledTask -Confirm:$false
+
+$campaigns = @(
+  @{ name = "2026-05-07-edicion-8"; date = "2026-05-07 14:00" },
+  @{ name = "2026-05-12-edicion-9"; date = "2026-05-12 14:00" },
+  @{ name = "2026-05-14-edicion-10"; date = "2026-05-14 14:00" },
+  @{ name = "2026-05-19-edicion-11"; date = "2026-05-19 14:00" },
+  @{ name = "2026-05-21-edicion-12"; date = "2026-05-21 14:00" },
+  @{ name = "2026-05-26-edicion-13"; date = "2026-05-26 14:00" },
+  @{ name = "2026-05-28-edicion-14"; date = "2026-05-28 14:00" },
+  @{ name = "2026-06-02-edicion-15"; date = "2026-06-02 14:00" },
+  @{ name = "2026-06-04-edicion-16"; date = "2026-06-04 14:00" }
+)
+
+foreach ($c in $campaigns) {
+  $action = New-ScheduledTaskAction `
+    -Execute $nodePath `
+    -Argument "..\scripts\send-newsletter.js $($c.name)" `
+    -WorkingDirectory $workDir
+
+  $trigger = New-ScheduledTaskTrigger `
+    -Once `
+    -At ([datetime]::ParseExact($c.date, "yyyy-MM-dd HH:mm", $null))
+
+  Register-ScheduledTask `
+    -TaskName "INNERA-$($c.name)" `
+    -Action $action `
+    -Trigger $trigger `
+    -RunLevel Highest `
+    -Force
+}
+
+---------
+VER TAREAS PROGRAMADAS
+
+Get-ScheduledTask | Where-Object { $_.TaskName -like "INNERA-2026*" } | Select-Object TaskName, State
+
+---------
+EJECUTAR UNA TAREA YA PROGRAMADA
+
+Start-ScheduledTask -TaskName "INNERA-2026-04-14-edicion-1"
+
+---------
+BORRAR TAREAS PROGRAMADAS
+
+Borrar una:
+Unregister-ScheduledTask -TaskName "INNERA-2026-04-14-edicion-1" -Confirm:$false
+
+Borrar todas las de INNERA:
+Get-ScheduledTask | Where-Object { $_.TaskName -like "INNERA-2026*" } | Unregister-ScheduledTask -Confirm:$false
+
+Si una tarea esta corriendo, primero detenla:
+Stop-ScheduledTask -TaskName "INNERA-2026-04-14-edicion-1"

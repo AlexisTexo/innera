@@ -51,13 +51,17 @@ function saveSentLog(log) {
   fs.writeFileSync(SENT_LOG_PATH, JSON.stringify(log, null, 2), 'utf8');
 }
 
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
   const campaign = process.argv[2];
   if (!campaign) {
     console.error('[newsletter] Uso: node send-newsletter.js <nombre-campaña>');
-    console.error('[newsletter] Ejemplo: node send-newsletter.js 2026-04-07-edicion-1');
+    console.error('[newsletter] Ejemplo: node send-newsletter.js 2026-04-14-edicion-1');
     process.exit(1);
   }
 
@@ -77,7 +81,7 @@ async function main() {
 
   // Cargar sent-log
   const sentLog = loadSentLog();
-  const alreadySent = new Set(sentLog[campaign] || []);
+  const alreadySent = new Set((sentLog[campaign] || []).map(normalizeEmail));
 
   // Obtener usuarios confirmados
   const snapshot = await db.collection('TestUsers').get();
@@ -85,7 +89,10 @@ async function main() {
 
   console.log(`[newsletter] Usuarios encontrados: ${users.length}`);
 
-  const pending = users.filter(u => u.email && !alreadySent.has(u.email));
+  const pending = users.filter(u => {
+    const email = normalizeEmail(u.email);
+    return email && !alreadySent.has(email);
+  });
   const skipped = users.length - pending.length;
 
   if (skipped > 0) console.log(`[newsletter] Saltando ${skipped} ya enviados`);
@@ -100,21 +107,32 @@ async function main() {
   let failed = 0;
 
   for (const user of pending) {
+    const email = normalizeEmail(user.email);
     const locale = String(user.locale || 'en').startsWith('es') ? 'es' : 'en';
     const subject = template.subject[locale];
     const html = template.html(user);
 
     try {
-      await mailer.sendMail({ from: MAIL_FROM, to: user.email, subject, html });
+      const info = await mailer.sendMail({ from: MAIL_FROM, to: email, subject, html });
+      const accepted = Array.isArray(info.accepted) ? info.accepted.map(normalizeEmail) : [];
+      const rejected = Array.isArray(info.rejected) ? info.rejected.map(normalizeEmail) : [];
+
+      if (accepted.length > 0 && !accepted.includes(email)) {
+        throw new Error(`SMTP no confirmó aceptación para ${email}. accepted=${accepted.join(', ') || '[]'}`);
+      }
+
+      if (rejected.includes(email)) {
+        throw new Error(`SMTP rechazó ${email}. rejected=${rejected.join(', ')}`);
+      }
 
       if (!sentLog[campaign]) sentLog[campaign] = [];
-      sentLog[campaign].push(user.email);
+      sentLog[campaign].push(email);
       saveSentLog(sentLog);
 
-      console.log(`[newsletter] ✓ ${user.email} (${locale})`);
+      console.log(`[newsletter] ✓ ${email} (${locale}) id=${info.messageId || 'n/a'} response=${info.response || 'n/a'}`);
       sent++;
     } catch (err) {
-      console.error(`[newsletter] ✗ ${user.email} — ${err.message}`);
+      console.error(`[newsletter] ✗ ${email} — ${err.message}`);
       failed++;
     }
   }

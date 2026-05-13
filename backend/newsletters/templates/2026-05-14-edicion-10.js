@@ -1,76 +1,76 @@
 module.exports = {
   subject: {
-    en: 'The Inner Signal — The co-founders of INNERA',
-    es: 'The Inner Signal — Los co-fundadores de INNERA',
+    en: 'The Inner Signal — Energy is a leadership system',
+    es: 'The Inner Signal — La energía como sistema de liderazgo',
   },
 
   html: (user) => {
     const isEn = String(user.locale || 'en').startsWith('en');
 
     const i18n = isEn ? {
-      preheader: 'You didn\'t just build a profile. You built the first collective map.',
+      preheader: 'Burnout does not start when energy disappears. It starts when recovery is treated as optional.',
       headerLabel: 'WEEKLY INTELLIGENCE · BY THE INNERCODE CO.',
-      editionLabel: 'EDITION #8',
-      title: 'The co-founders<br/>of INNERA',
+      editionLabel: 'EDITION #10',
+      title: 'Energy is a<br/>leadership system',
       section1Title: 'THE OBSERVATORY',
       section1Body: `
-        <p style="margin:0 0 14px; text-align:justify;">To the 300 users of the beta: what you built was not just an IBP profile. You built the first collective map of human patterns that will make INNERA more precise for the millions who come after you.</p>
-        <p style="margin:0 0 14px; text-align:justify;">The word co-founder is not a marketing metaphor here. It's a functional description. Without your participation — your honest responses, your real patterns, your willingness to be observed with precision — the calibration phase would have been theoretical.</p>
-        <p style="margin:0 0 14px; text-align:justify;">What you contributed is not a dataset. It's a foundation. The IBP is now more accurate because 300 people agreed to be seen clearly. That's rare. Most tools are calibrated on sanitized, self-reported, socially desirable data. Yours was not.</p>
-        <p style="margin:0; text-align:justify;">Phase 2 begins soon. What it looks like — and what role you play in it — is part of what this letter is about.</p>
+        <p style="margin:0 0 14px; text-align:justify;">Energy is usually treated as a private variable: sleep better, eat cleaner, take a break. Useful advice. Incomplete model.</p>
+        <p style="margin:0 0 14px; text-align:justify;">In practice, energy is a leadership system. It decides the quality of your attention, the width of your patience, the precision of your decisions, and the tone of your presence before you say a word.</p>
+        <p style="margin:0 0 14px; text-align:justify;">A depleted person does not simply feel tired. They simplify the world too aggressively. They choose shorter time horizons. They make other people manage the consequences of an unregulated interior.</p>
+        <p style="margin:0; text-align:justify;">This is why recovery is not a reward after output. Recovery is infrastructure. Without it, the system still runs, but it runs with lower resolution.</p>
       `,
       section2Title: 'THE SIGNAL',
       section2Body: `
-        <p style="margin:0 0 10px; text-align:justify;"><strong>94% of beta users completed their IBP profile within the first 48 hours. Average session time: 18 minutes. Preliminary Net Promoter Score: 71.</strong> <span style="color:#666; font-size:14px;">(Internal data, INNERA beta — only published because the real numbers are good.)</span></p>
-        <p style="margin:0; text-align:justify;">An NPS of 71 places INNERA in the same category as tools people recommend without being asked. That's the only metric that matters to us.</p>
+        <p style="margin:0 0 10px; text-align:justify;"><strong>Signal to watch: when your energy drops, your standards do not disappear. They become harder to access at the exact moment you need them most.</strong> <span style="color:#666; font-size:14px;">(INNERA calibration note)</span></p>
+        <p style="margin:0; text-align:justify;">The question is not only "How much can I do?" It is "What version of me is doing it?"</p>
       `,
       section3Title: 'FROM THE IBP',
       section3Body: `
-        <p style="margin:0 0 14px; text-align:justify;">The IAC: Conscious Agency Index. The most important index in the IBP. The measure of how much of your life you are actively choosing versus responding to automatically.</p>
-        <p style="margin:0 0 14px; text-align:justify;">This is what the entire IBP builds toward: not a personality label, not a trait profile, but a living measure of your capacity to act from choice rather than from pattern.</p>
-        <p style="margin:0; text-align:justify;">That capacity can be trained. The IBP maps the starting point. What comes next — Phase 2 — maps the trajectory.</p>
+        <p style="margin:0 0 14px; text-align:justify;">The RPI: Restoration Pattern Index. A map of what actually restores your system versus what only distracts it for a few minutes.</p>
+        <p style="margin:0 0 14px; text-align:justify;">The RPI separates three different states that often get confused: rest, avoidance, and restoration. Rest pauses output. Avoidance delays contact. Restoration increases capacity.</p>
+        <p style="margin:0; text-align:justify;">Most people know what drains them. Fewer know what restores them with enough precision to protect it on purpose.</p>
       `,
       section4Title: 'QUESTION OF THE WEEK',
-      section4Quote: '"If you could change one internal pattern you\'ve been repeating for too long — which one would it be?"',
+      section4Quote: '"What are you currently calling rest that is actually avoidance?"',
       section5Title: 'THE RESOURCE',
-      section5Label: 'FROM INNERA',
-      section5Body: `<strong>Open letter to the 300 co-founders</strong> — The InnerCode Co.`,
-      section5Sub: 'Published also as an article on LinkedIn. What Phase 2 looks like, what it means for you, and why the first 300 matter more than the next 300,000.',
-      section5Url: 'https://www.linkedin.com/in/innera-net-0549253b2/',
-      section5Cta: 'Read on LinkedIn →',
+      section5Label: 'RECOMMENDED READ',
+      section5Body: `<strong>Manage Your Energy, Not Your Time</strong> — Tony Schwartz & Catherine McCarthy, Harvard Business Review`,
+      section5Sub: 'A foundational piece on performance capacity, recovery rituals, and why time management is incomplete without energy management.',
+      section5Url: 'https://hbr.org/2007/10/manage-your-energy-not-your-time',
+      section5Cta: 'Read →',
       footerLine: 'You are receiving this because you are part of the INNERA controlled calibration phase.',
       unsubscribe: 'If you no longer wish to receive The Inner Signal, reply to this email.',
     } : {
-      preheader: 'No solo construiste un perfil. Construiste el primer mapa colectivo.',
+      preheader: 'El burnout no empieza cuando la energía desaparece. Empieza cuando la recuperación se trata como opcional.',
       headerLabel: 'INTELIGENCIA SEMANAL · BY THE INNERCODE CO.',
-      editionLabel: 'EDICIÓN #8',
-      title: 'Los co-fundadores<br/>de INNERA',
+      editionLabel: 'EDICIÓN #10',
+      title: 'La energía como<br/>sistema de liderazgo',
       section1Title: 'EL OBSERVATORIO',
       section1Body: `
-        <p style="margin:0 0 14px; text-align:justify;">A los 300 usuarios de la beta: lo que construyeron no fue solo un perfil IBP. Construyeron el primer mapa colectivo de patrones humanos que hará que INNERA sea más preciso para los millones que vengan después.</p>
-        <p style="margin:0 0 14px; text-align:justify;">La palabra co-fundador no es una metáfora de marketing aquí. Es una descripción funcional. Sin su participación — sus respuestas honestas, sus patrones reales, su disposición a ser observados con precisión — la fase de calibración hubiera sido teórica.</p>
-        <p style="margin:0 0 14px; text-align:justify;">Lo que aportaron no es un dataset. Es una base. El IBP ahora es más preciso porque 300 personas aceptaron ser vistas con claridad. Eso es raro. La mayoría de herramientas se calibran con datos sanitizados, autorreportados, socialmente deseables. Los suyos no.</p>
-        <p style="margin:0; text-align:justify;">La Fase 2 comienza pronto. Cómo se ve — y qué papel juegan en ella — es parte de lo que trata esta carta.</p>
+        <p style="margin:0 0 14px; text-align:justify;">La energía suele tratarse como una variable privada: duerme mejor, come más limpio, descansa. Consejo útil. Modelo incompleto.</p>
+        <p style="margin:0 0 14px; text-align:justify;">En la práctica, la energía es un sistema de liderazgo. Decide la calidad de tu atención, el ancho de tu paciencia, la precisión de tus decisiones y el tono de tu presencia antes de que digas una palabra.</p>
+        <p style="margin:0 0 14px; text-align:justify;">Una persona agotada no solo se siente cansada. Simplifica el mundo demasiado rápido. Elige horizontes temporales más cortos. Hace que otras personas gestionen las consecuencias de un interior no regulado.</p>
+        <p style="margin:0; text-align:justify;">Por eso la recuperación no es una recompensa después del rendimiento. La recuperación es infraestructura. Sin ella, el sistema sigue corriendo, pero corre con menor resolución.</p>
       `,
       section2Title: 'LA SEÑAL',
       section2Body: `
-        <p style="margin:0 0 10px; text-align:justify;"><strong>El 94% de los usuarios beta completaron su perfil IBP en las primeras 48 horas. Tiempo promedio de sesión: 18 minutos. Net Promoter Score preliminar: 71.</strong> <span style="color:#666; font-size:14px;">(Datos internos, beta INNERA — solo publicados porque los números reales son buenos.)</span></p>
-        <p style="margin:0; text-align:justify;">Un NPS de 71 coloca a INNERA en la misma categoría que las herramientas que las personas recomiendan sin que se lo pidan. Esa es la única métrica que nos importa.</p>
+        <p style="margin:0 0 10px; text-align:justify;"><strong>Señal a observar: cuando tu energía baja, tus estándares no desaparecen. Se vuelven más difíciles de acceder justo cuando más los necesitas.</strong> <span style="color:#666; font-size:14px;">(Nota de calibración INNERA)</span></p>
+        <p style="margin:0; text-align:justify;">La pregunta no es solo "¿Cuánto puedo hacer?" Es "¿Qué versión de mí lo está haciendo?"</p>
       `,
       section3Title: 'DESDE EL IBP',
       section3Body: `
-        <p style="margin:0 0 14px; text-align:justify;">El IAC: Índice de Agencia Consciente. El índice más importante del IBP. La medida de cuánto de tu vida estás eligiendo activamente versus respondiendo de forma automática.</p>
-        <p style="margin:0 0 14px; text-align:justify;">Hacia esto construye todo el IBP: no una etiqueta de personalidad, no un perfil de rasgos, sino una medida viva de tu capacidad de actuar desde la elección en lugar de desde el patrón.</p>
-        <p style="margin:0; text-align:justify;">Esa capacidad puede entrenarse. El IBP mapea el punto de partida. Lo que viene después — Fase 2 — mapea la trayectoria.</p>
+        <p style="margin:0 0 14px; text-align:justify;">El RPI: Índice de Patrón de Restauración. Un mapa de lo que realmente restaura tu sistema versus lo que solo lo distrae durante unos minutos.</p>
+        <p style="margin:0 0 14px; text-align:justify;">El RPI separa tres estados que suelen confundirse: descanso, evasión y restauración. El descanso pausa el output. La evasión retrasa el contacto. La restauración aumenta capacidad.</p>
+        <p style="margin:0; text-align:justify;">La mayoría sabe qué la drena. Menos personas saben qué las restaura con suficiente precisión como para protegerlo a propósito.</p>
       `,
       section4Title: 'LA PREGUNTA DE LA SEMANA',
-      section4Quote: '"Si pudieras cambiar un patrón interno que llevas repitiendo demasiado tiempo, ¿cuál sería?"',
+      section4Quote: '"¿A qué le estás llamando descanso que en realidad es evasión?"',
       section5Title: 'EL RECURSO',
-      section5Label: 'DE INNERA',
-      section5Body: `<strong>Carta abierta a los 300 co-fundadores</strong> — The InnerCode Co.`,
-      section5Sub: 'Publicada también como artículo en LinkedIn. Cómo se ve la Fase 2, qué significa para ti, y por qué los primeros 300 importan más que los siguientes 300,000.',
-      section5Url: 'https://www.linkedin.com/in/innera-net-0549253b2/',
-      section5Cta: 'Leer en LinkedIn →',
+      section5Label: 'LECTURA RECOMENDADA',
+      section5Body: `<strong>Manage Your Energy, Not Your Time</strong> — Tony Schwartz & Catherine McCarthy, Harvard Business Review`,
+      section5Sub: 'Un texto base sobre capacidad de rendimiento, rituales de recuperación y por qué la gestión del tiempo está incompleta sin gestión de energía.',
+      section5Url: 'https://hbr.org/2007/10/manage-your-energy-not-your-time',
+      section5Cta: 'Leer →',
       footerLine: 'Recibes esto porque eres parte de la fase de calibración controlada de INNERA.',
       unsubscribe: 'Si ya no deseas recibir The Inner Signal, responde a este correo.',
     };
@@ -93,7 +93,7 @@ module.exports = {
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px; background-color:#ffffff;">
           <tr><td style="background-color:#000000; padding:20px 24px;" align="center"><img src="https://i.imgur.com/QJIoscZ.png" alt="The Inner Code" width="140" style="display:block; width:140px; max-width:100%; height:auto; border:0;" /></td></tr>
           <tr><td style="background-color:#000000; padding:0 24px 16px;" align="center"><p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:11px; letter-spacing:2px; color:#888888; text-transform:uppercase;">${i18n.headerLabel}</p></td></tr>
-          <tr><td style="padding:0;" align="center"><img src="https://i.imgur.com/0jAMS0W.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" /></td></tr>
+          <tr><td style="padding:0;" align="center"><img src="https://i.imgur.com/W9nrLAQ.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" /></td></tr>
           <tr><td style="padding:28px 24px 0; font-family:Arial, Helvetica, sans-serif;">
             <p style="margin:0 0 4px; font-size:11px; letter-spacing:2px; color:#888888; text-transform:uppercase;">THE INNER SIGNAL · ${i18n.editionLabel}</p>
             <h1 style="margin:6px 0 0; font-size:26px; font-weight:700; line-height:1.2; color:#121212;">${i18n.title}</h1>
@@ -110,7 +110,7 @@ module.exports = {
           <tr><td style="padding:24px 24px 32px; font-family:Arial, Helvetica, sans-serif;">${icon('&#9633;', '#3DB86A', i18n.section5Title)}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e0e0e0; border-radius:4px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 4px; font-size:11px; letter-spacing:1.5px; color:#888888; text-transform:uppercase;">${i18n.section5Label}</p><p style="margin:6px 0 4px; font-size:15px; line-height:1.5; color:#121212; text-align:justify;">${i18n.section5Body}</p><p style="margin:0 0 12px; font-size:13px; color:#666666; text-align:justify;">${i18n.section5Sub}</p><a href="${i18n.section5Url}" target="_blank" style="display:inline-block; padding:8px 16px; background:#000; color:#fff; text-decoration:none; border-radius:4px; font-size:13px; font-weight:700;">${i18n.section5Cta}</a></td></tr></table></td></tr>
           <tr><td style="background-color:#000000; padding:20px 24px 10px;" align="center"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
             <td style="padding:0 8px;"><a href="https://www.instagram.com/inneranet/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/instagram-new.png" alt="Instagram" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
-            <td style="padding:0 8px;"><a href="https://www.facebook.com/people/Innera/61588072216975/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png" alt="Facebook" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
+            <td style="padding:0 8px;"><a href="${isEn ? 'https://www.facebook.com/profile.php?id=61573271853654&locale=es_LA' : 'https://www.facebook.com/profile.php?id=61573357957063'}" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png" alt="Facebook" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
             <td style="padding:0 8px;"><a href="https://x.com/InneraManager" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/twitterx--v1.png" alt="X" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
             <td style="padding:0 8px;"><a href="https://www.tiktok.com/@innera.net" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/tiktok--v1.png" alt="TikTok" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
             <td style="padding:0 8px;"><a href="https://www.linkedin.com/in/innera-net-0549253b2/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/linkedin.png" alt="LinkedIn" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>

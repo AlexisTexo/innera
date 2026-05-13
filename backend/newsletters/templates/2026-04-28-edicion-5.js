@@ -1,76 +1,80 @@
 module.exports = {
   subject: {
-    en: 'The Inner Signal — Coherence as competitive advantage',
-    es: 'The Inner Signal — La coherencia como ventaja competitiva',
+    en: 'The Inner Signal — What we learned from the first 50 users',
+    es: 'The Inner Signal — Lo que aprendimos de los primeros 50 usuarios',
   },
 
   html: (user) => {
     const isEn = String(user.locale || 'en').startsWith('en');
 
     const i18n = isEn ? {
-      preheader: 'McKinsey: CEOs with higher self-awareness show 23% more profitability over 5 years.',
+      preheader: '78% of IBP profiles: the functional archetype under pressure differed from the declared one.',
       headerLabel: 'WEEKLY INTELLIGENCE · BY THE INNERCODE CO.',
-      editionLabel: 'EDITION #7',
-      title: 'Coherence as<br/>competitive advantage',
+      editionLabel: 'EDITION #5',
+      title: 'What we learned from<br/>the first 50 users',
       section1Title: 'THE OBSERVATORY',
       section1Body: `
-        <p style="margin:0 0 14px; text-align:justify;">In 2026, the most real and least replicable competitive advantage is internal coherence. Not skills. Not network. Not capital.</p>
-        <p style="margin:0 0 14px; text-align:justify;">The ability to operate from the same inner system — regardless of external conditions — is what separates leaders who endure from those who consume. Leaders who endure don't have less pressure. They have a more stable internal platform from which to process it.</p>
-        <p style="margin:0 0 14px; text-align:justify;">Coherence is not consistency of mood. It's not the absence of doubt. It's the alignment between what you say matters, how you allocate your attention, and the decisions you make under uncertainty.</p>
-        <p style="margin:0; text-align:justify;">That alignment can be mapped. It can be measured. And once measured, it can be recalibrated. That's what INNERA is built to do.</p>
+        <p style="margin:0 0 14px; text-align:justify;">No names. No direct testimonials. What follows is a pattern analysis — five recurring observations from the first 50 IBP profiles completed in INNERA's calibration phase.</p>
+        <p style="margin:0 0 14px; text-align:justify;"><strong>Pattern 1:</strong> The gap between declared dominant archetype and functional archetype. Most users self-report operating from one archetype. The IBP consistently maps a different one — especially under pressure conditions.</p>
+        <p style="margin:0 0 14px; text-align:justify;"><strong>Pattern 2:</strong> The NSI (Nervous System Index) as a predictor of decision quality. Users with lower NSI scores showed measurably narrower decision ranges — fewer options considered, shorter time horizons, higher reactivity.</p>
+        <p style="margin:0 0 14px; text-align:justify;"><strong>Pattern 3:</strong> The ICI (Interior Climate Index) proved more predictive of weekly coherence than any self-reported mood metric.</p>
+        <p style="margin:0 0 14px; text-align:justify;"><strong>Pattern 4:</strong> Restoration patterns diverged significantly from user expectations. What people thought restored them and what actually did were different in 6 out of 10 profiles.</p>
+        <p style="margin:0; text-align:justify;"><strong>Pattern 5:</strong> The most consistent predictor of high weekly coherence was not productivity — it was nervous system regulation during the first 90 minutes of the day.</p>
       `,
       section2Title: 'THE SIGNAL',
       section2Body: `
-        <p style="margin:0 0 10px; text-align:justify;"><strong>CEOs with objectively measured higher self-awareness make significantly better decisions under pressure and show 23% more profitability in their companies over 5 years.</strong> <span style="color:#666; font-size:14px;">(McKinsey, 2024)</span></p>
-        <p style="margin:0; text-align:justify;">Self-knowledge is not philosophy. It's a quantifiable advantage. The IBP is the measurement layer that makes that advantage accessible.</p>
+        <p style="margin:0 0 10px; text-align:justify;"><strong>In 78% of beta IBP profiles, the functional archetype under pressure differed significantly from the declared archetype in self-report.</strong> <span style="color:#666; font-size:14px;">(Internal data, anonymized, INNERA beta)</span></p>
+        <p style="margin:0; text-align:justify;">What you think you do under pressure and what you actually do are frequently two different things. The IBP doesn't ask — it observes.</p>
       `,
       section3Title: 'FROM THE IBP',
       section3Body: `
-        <p style="margin:0 0 14px; text-align:justify;">The ICo: Weekly Coherence Index. How to measure whether your actions this week were aligned with your value system — and how to use that information to adjust the following week.</p>
-        <p style="margin:0 0 14px; text-align:justify;">The ICo doesn't measure whether you were productive. It measures whether what you did was coherent with what you decided mattered. Those are frequently different things.</p>
-        <p style="margin:0; text-align:justify;">High ICo week: you feel integration, even if the week was hard. Low ICo week: you feel friction, even if the results looked good on paper.</p>
+        <p style="margin:0 0 14px; text-align:justify;">The NSI: Nervous System Index. The state of your autonomic nervous system is the filter through which you process all information, all relationships, all decisions.</p>
+        <p style="margin:0 0 14px; text-align:justify;">When the NSI is low — meaning your nervous system is in a threat or shutdown state — your cognitive range narrows. You see fewer options. You act faster and with less information. You mistake urgency for clarity.</p>
+        <p style="margin:0; text-align:justify;">This is not a weakness. It's biology. The IBP maps it so you can work with it instead of against it.</p>
       `,
       section4Title: 'QUESTION OF THE WEEK',
-      section4Quote: '"How much of what you did this week was truly a choice — and how much was a reaction?"',
+      section4Quote: '"Can you distinguish, right now, whether you are responding from safety or from perceived threat?"',
       section5Title: 'THE RESOURCE',
-      section5Label: 'RECOMMENDED READ',
-      section5Body: `<strong>The Making of a Corporate Athlete</strong> — Jim Loehr & Tony Schwartz, Harvard Business Review`,
-      section5Sub: 'One of the most cited texts on sustainable high performance and internal energy management. The case for treating inner resources like professional ones.',
-      section5Url: 'https://hbr.org/2001/10/the-making-of-a-corporate-athlete',
-      section5Cta: 'Read →',
+      section5Label: 'RECOMMENDED WATCH',
+      section5Body: `<strong>Somatic Marker Hypothesis</strong> — António Damásio`,
+      section5Sub: 'Why emotions are information, not interference. The neuroscientific case for why your body\'s signals are a critical input in rational decision-making.',
+      section5Url: 'https://www.ted.com/talks/antonio_damasio_the_quest_to_understand_consciousness',
+      section5Cta: 'Watch →',
       footerLine: 'You are receiving this because you are part of the INNERA controlled calibration phase.',
       unsubscribe: 'If you no longer wish to receive The Inner Signal, reply to this email.',
     } : {
-      preheader: 'McKinsey: Los CEOs con mayor autoconocimiento muestran 23% más rentabilidad a 5 años.',
+      preheader: 'En el 78% de los perfiles IBP, el arquetipo funcional bajo presión difirió del declarado.',
       headerLabel: 'INTELIGENCIA SEMANAL · BY THE INNERCODE CO.',
-      editionLabel: 'EDICIÓN #7',
-      title: 'La coherencia como<br/>ventaja competitiva',
+      editionLabel: 'EDICIÓN #5',
+      title: 'Lo que aprendimos de<br/>los primeros 50 usuarios',
       section1Title: 'EL OBSERVATORIO',
       section1Body: `
-        <p style="margin:0 0 14px; text-align:justify;">En 2026, la ventaja competitiva más real y menos replicable es la coherencia interna. No habilidades. No red de contactos. No capital.</p>
-        <p style="margin:0 0 14px; text-align:justify;">La capacidad de operar desde el mismo sistema interior — independientemente de las condiciones externas — es lo que separa a los líderes que perduran de los que se consumen. Los que perduran no tienen menos presión. Tienen una plataforma interna más estable desde la que procesarla.</p>
-        <p style="margin:0 0 14px; text-align:justify;">La coherencia no es consistencia de estado de ánimo. No es ausencia de duda. Es la alineación entre lo que dices que te importa, cómo asignas tu atención, y las decisiones que tomas bajo incertidumbre.</p>
-        <p style="margin:0; text-align:justify;">Esa alineación puede mapearse. Puede medirse. Y una vez medida, puede recalibrarse. Para eso fue construido INNERA.</p>
+        <p style="margin:0 0 14px; text-align:justify;">Sin nombres. Sin testimonios directos. Lo que sigue es un análisis de patrones — cinco observaciones recurrentes en los primeros 50 perfiles IBP completados en la fase de calibración de INNERA.</p>
+        <p style="margin:0 0 14px; text-align:justify;"><strong>Patrón 1:</strong> La brecha entre el arquetipo dominante declarado y el arquetipo funcional real. La mayoría de usuarios reporta operar desde un arquetipo. El IBP mapea consistentemente uno diferente — especialmente bajo condiciones de presión.</p>
+        <p style="margin:0 0 14px; text-align:justify;"><strong>Patrón 2:</strong> El NSI (Índice del Sistema Nervioso) como predictor de calidad de decisión. Los usuarios con NSI bajo mostraron rangos de decisión mediblemente más estrechos — menos opciones consideradas, horizontes temporales más cortos, mayor reactividad.</p>
+        <p style="margin:0 0 14px; text-align:justify;"><strong>Patrón 3:</strong> El ICI (Índice de Clima Interior) resultó más predictivo de la coherencia semanal que cualquier métrica de estado de ánimo autorreportado.</p>
+        <p style="margin:0 0 14px; text-align:justify;"><strong>Patrón 4:</strong> Los patrones de restauración divergieron significativamente de las expectativas del usuario. Lo que las personas creían que las restauraba y lo que realmente lo hacía eran diferentes en 6 de cada 10 perfiles.</p>
+        <p style="margin:0; text-align:justify;"><strong>Patrón 5:</strong> El predictor más consistente de alta coherencia semanal no fue la productividad — fue la regulación del sistema nervioso durante los primeros 90 minutos del día.</p>
       `,
       section2Title: 'LA SEÑAL',
       section2Body: `
-        <p style="margin:0 0 10px; text-align:justify;"><strong>Los CEOs con mayor 'self-awareness' medida objetivamente toman decisiones significativamente mejores bajo presión y muestran 23% más de rentabilidad en sus empresas a 5 años vista.</strong> <span style="color:#666; font-size:14px;">(McKinsey, 2024)</span></p>
-        <p style="margin:0; text-align:justify;">El autoconocimiento no es filosofía. Es una ventaja cuantificable. El IBP es la capa de medición que hace esa ventaja accesible.</p>
+        <p style="margin:0 0 10px; text-align:justify;"><strong>En el 78% de los perfiles IBP de la beta, el arquetipo funcional real bajo presión difería significativamente del arquetipo declarado en autoinforme.</strong> <span style="color:#666; font-size:14px;">(Datos internos, anonimizados, beta INNERA)</span></p>
+        <p style="margin:0; text-align:justify;">Lo que crees que haces bajo presión y lo que realmente haces son frecuentemente dos cosas diferentes. El IBP no pregunta — observa.</p>
       `,
       section3Title: 'DESDE EL IBP',
       section3Body: `
-        <p style="margin:0 0 14px; text-align:justify;">El ICo: Índice de Coherencia Semanal. Cómo medir si tus acciones de la semana estuvieron alineadas con tu sistema de valores — y cómo usar esa información para ajustar la siguiente semana.</p>
-        <p style="margin:0 0 14px; text-align:justify;">El ICo no mide si fuiste productivo. Mide si lo que hiciste fue coherente con lo que decidiste que importaba. Esas son frecuentemente cosas diferentes.</p>
-        <p style="margin:0; text-align:justify;">Semana con ICo alto: sientes integración, aunque la semana haya sido difícil. Semana con ICo bajo: sientes fricción, aunque los resultados se vean bien en el papel.</p>
+        <p style="margin:0 0 14px; text-align:justify;">El NSI: Índice del Sistema Nervioso. El estado de tu sistema nervioso autónomo es el filtro a través del cual procesas toda la información, toda la relación, toda la decisión.</p>
+        <p style="margin:0 0 14px; text-align:justify;">Cuando el NSI es bajo — es decir, cuando tu sistema nervioso está en estado de amenaza o cierre — tu rango cognitivo se estrecha. Ves menos opciones. Actúas más rápido y con menos información. Confundes urgencia con claridad.</p>
+        <p style="margin:0; text-align:justify;">No es una debilidad. Es biología. El IBP lo mapea para que puedas trabajar con ello en lugar de contra ello.</p>
       `,
       section4Title: 'LA PREGUNTA DE LA SEMANA',
-      section4Quote: '"¿Cuánto de lo que hiciste esta semana fue realmente una elección — y cuánto fue una reacción?"',
+      section4Quote: '"¿Puedes distinguir, en este momento, si estás respondiendo desde seguridad o desde amenaza percibida?"',
       section5Title: 'EL RECURSO',
-      section5Label: 'LECTURA RECOMENDADA',
-      section5Body: `<strong>The Making of a Corporate Athlete</strong> — Jim Loehr & Tony Schwartz, Harvard Business Review`,
-      section5Sub: 'Uno de los textos más citados sobre rendimiento sostenible y gestión de la energía interna. El argumento para tratar los recursos interiores como recursos profesionales.',
-      section5Url: 'https://hbr.org/2001/01/the-making-of-a-corporate-athlete',
-      section5Cta: 'Leer →',
+      section5Label: 'RECURSO RECOMENDADO',
+      section5Body: `<strong>The quest to understand consciousness</strong> — António Damásio`,
+      section5Sub: 'Por qué las emociones son información, no interferencia. El argumento neurocientífico de por qué las señales de tu cuerpo son un input crítico en la toma de decisiones racional.',
+      section5Url: 'https://www.ted.com/talks/antonio_damasio_the_quest_to_understand_consciousness',
+      section5Cta: 'Ver →',
       footerLine: 'Recibes esto porque eres parte de la fase de calibración controlada de INNERA.',
       unsubscribe: 'Si ya no deseas recibir The Inner Signal, responde a este correo.',
     };
@@ -93,7 +97,7 @@ module.exports = {
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px; background-color:#ffffff;">
           <tr><td style="background-color:#000000; padding:20px 24px;" align="center"><img src="https://i.imgur.com/QJIoscZ.png" alt="The Inner Code" width="140" style="display:block; width:140px; max-width:100%; height:auto; border:0;" /></td></tr>
           <tr><td style="background-color:#000000; padding:0 24px 16px;" align="center"><p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:11px; letter-spacing:2px; color:#888888; text-transform:uppercase;">${i18n.headerLabel}</p></td></tr>
-          <tr><td style="padding:0;" align="center"><img src="https://i.imgur.com/xuIRfBn.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" /></td></tr>
+          <tr><td style="padding:0;" align="center"><img src="https://i.imgur.com/s2hOTs3.png" alt="INNERA" width="560" style="display:block; width:100%; max-width:560px; height:auto; border:0;" /></td></tr>
           <tr><td style="padding:28px 24px 0; font-family:Arial, Helvetica, sans-serif;">
             <p style="margin:0 0 4px; font-size:11px; letter-spacing:2px; color:#888888; text-transform:uppercase;">THE INNER SIGNAL · ${i18n.editionLabel}</p>
             <h1 style="margin:6px 0 0; font-size:26px; font-weight:700; line-height:1.2; color:#121212;">${i18n.title}</h1>
@@ -110,7 +114,7 @@ module.exports = {
           <tr><td style="padding:24px 24px 32px; font-family:Arial, Helvetica, sans-serif;">${icon('&#9633;', '#3DB86A', i18n.section5Title)}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e0e0e0; border-radius:4px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 4px; font-size:11px; letter-spacing:1.5px; color:#888888; text-transform:uppercase;">${i18n.section5Label}</p><p style="margin:6px 0 4px; font-size:15px; line-height:1.5; color:#121212; text-align:justify;">${i18n.section5Body}</p><p style="margin:0 0 12px; font-size:13px; color:#666666; text-align:justify;">${i18n.section5Sub}</p><a href="${i18n.section5Url}" target="_blank" style="display:inline-block; padding:8px 16px; background:#000; color:#fff; text-decoration:none; border-radius:4px; font-size:13px; font-weight:700;">${i18n.section5Cta}</a></td></tr></table></td></tr>
           <tr><td style="background-color:#000000; padding:20px 24px 10px;" align="center"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
             <td style="padding:0 8px;"><a href="https://www.instagram.com/inneranet/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/instagram-new.png" alt="Instagram" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
-            <td style="padding:0 8px;"><a href="https://www.facebook.com/people/Innera/61588072216975/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png" alt="Facebook" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
+            <td style="padding:0 8px;"><a href="${isEn ? 'https://www.facebook.com/profile.php?id=61573271853654&locale=es_LA' : 'https://www.facebook.com/profile.php?id=61573357957063'}" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/facebook-new.png" alt="Facebook" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
             <td style="padding:0 8px;"><a href="https://x.com/InneraManager" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/twitterx--v1.png" alt="X" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
             <td style="padding:0 8px;"><a href="https://www.tiktok.com/@innera.net" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/tiktok--v1.png" alt="TikTok" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
             <td style="padding:0 8px;"><a href="https://www.linkedin.com/in/innera-net-0549253b2/" target="_blank" style="text-decoration:none;"><img src="https://img.icons8.com/ios-filled/50/FFFFFF/linkedin.png" alt="LinkedIn" width="20" style="display:block; width:20px; height:20px; border:0;" /></a></td>
